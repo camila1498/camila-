@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programas — CreateLatam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;600;700;900&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --violeta: #5B1BD2;
+    --violeta-deep: #3D0F99;
+    --amarillo: #FFD938;
+    --magenta: #99205B;
+    --lavanda: #E4D5F6;
+    --ink: #1A1225;
+    --paper: #FBF8FF;
+    --white: #FFFFFF;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior:auto !important; }
+  }
+
+  h1,h2,h3, .display{ font-family:'MuseoModerno', cursive; font-weight:700; letter-spacing:-0.01em; }
+  .eyebrow{ font-family:'MuseoModerno', cursive; font-weight:600; text-transform:uppercase; letter-spacing:0.14em; font-size:0.78rem; }
+
+  a{ color:inherit; }
+  img,svg{ display:block; max-width:100%; }
+  .wrap{ max-width:1120px; margin:0 auto; padding:0 32px; }
+  section{ position:relative; }
+
+  :focus-visible{ outline:3px solid var(--amarillo); outline-offset:3px; }
+
+  .star{ display:inline-block; }
+
+  /* ---------- NAV ---------- */
+  header{
+    position: sticky; top:0; z-index: 50;
+    background: rgba(251,248,255,0.86);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(91,27,210,0.12);
+  }
+  nav.wrap{ display:flex; align-items:center; justify-content:space-between; height:76px; }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'MuseoModerno',cursive; font-weight:700; font-size:1.25rem; color:var(--violeta-deep); text-decoration:none; }
+  .brand .star svg{ width:22px; height:22px; }
+  nav ul{ list-style:none; display:flex; gap:34px; }
+  nav ul a{ text-decoration:none; font-size:0.95rem; font-weight:500; color:var(--ink); position:relative; padding:4px 0; }
+  nav ul a::after{ content:""; position:absolute; left:0; bottom:0; height:2px; width:0; background:var(--magenta); transition:width .25s ease; }
+  nav ul a:hover::after, nav ul a.active::after{ width:100%; }
+  nav ul a.active{ color:var(--violeta-deep); font-weight:600; }
+  .nav-cta{
+    background:var(--violeta); color:var(--white); padding:10px 20px; border-radius:999px;
+    font-weight:600; font-size:0.9rem; text-decoration:none; white-space:nowrap;
+    transition: transform .2s ease, background .2s ease;
+  }
+  .nav-cta:hover{ background:var(--violeta-deep); transform:translateY(-1px); }
+
+  @media (max-width: 880px){ nav ul{ display:none; } }
+
+  /* ---------- PAGE HERO ---------- */
+  .page-hero{
+    background: radial-gradient(120% 140% at 15% 0%, var(--violeta-deep) 0%, var(--violeta) 46%, #4A14B8 100%);
+    color: var(--white);
+    padding: 76px 0 84px;
+  }
+  .breadcrumb{ font-size:0.85rem; color:var(--lavanda); margin-bottom:20px; }
+  .breadcrumb a{ text-decoration:none; color:var(--lavanda); }
+  .breadcrumb a:hover{ text-decoration:underline; }
+  .page-hero h1{ font-size: clamp(2.2rem, 4.4vw, 3.1rem); color:var(--white); margin-bottom:18px; max-width:20ch; }
+  .page-hero p{ font-size:1.08rem; color:var(--lavanda); max-width:56ch; font-weight:300; }
+
+  /* ---------- PROGRAM DETAIL BLOCKS ---------- */
+  .program-detail{ padding: 96px 0; border-bottom:1px solid rgba(91,27,210,0.12); }
+  .program-detail:nth-child(even){ background: var(--lavanda); }
+  .program-detail .inner{ display:grid; grid-template-columns: 0.9fr 1.1fr; gap:56px; align-items:start; }
+  .program-num{ font-family:'MuseoModerno',cursive; font-weight:900; font-size:1rem; color:var(--magenta); margin-bottom:16px; letter-spacing:0.06em; text-transform:uppercase; }
+  .program-detail h2{ font-size: clamp(1.7rem, 3vw, 2.3rem); color:var(--violeta-deep); margin-bottom:18px; }
+  .program-detail .star.big svg{ width:34px; height:34px; margin-bottom:20px; }
+  .program-detail .star.big svg path{ fill:var(--amarillo); }
+  .program-detail p.desc{ color:#463A57; font-size:1.02rem; margin-bottom:20px; }
+  .detail-list{ list-style:none; display:flex; flex-direction:column; gap:14px; }
+  .detail-list li{ display:flex; gap:12px; align-items:flex-start; color:#463A57; font-size:0.95rem; }
+  .detail-list .bullet-star{ flex-shrink:0; margin-top:4px; }
+  .detail-list .bullet-star svg{ width:12px; height:12px; }
+  .detail-list .bullet-star svg path{ fill:var(--violeta); }
+  .sub-card{ background: var(--white); border-radius:20px; padding:26px 28px; border:1px solid rgba(91,27,210,0.12); }
+  .sub-card + .sub-card{ margin-top:16px; }
+  .sub-card .tag{ font-family:'MuseoModerno',cursive; font-weight:700; color:var(--violeta); font-size:1.02rem; }
+  .sub-card .tag span{ display:block; font-family:'Be Vietnam Pro',sans-serif; font-weight:400; font-size:0.78rem; color:#8A7BA3; margin-top:4px; text-transform:uppercase; letter-spacing:0.06em; }
+  .sub-card p{ margin-top:10px; font-size:0.9rem; color:#463A57; }
+
+  @media (max-width: 880px){
+    nav.wrap{ padding:0 20px; }
+    .wrap{ padding:0 20px; }
+    .page-hero{ padding:48px 0 56px; }
+    .page-hero h1{ font-size:clamp(1.8rem,7vw,2.4rem); }
+    .program-detail{ padding:56px 0; }
+    .program-detail .inner{ grid-template-columns: 1fr; gap:28px; }
+    .program-detail h2{ font-size:clamp(1.6rem,6vw,2rem); }
+    .sub-card{ padding:20px; }
+    .cta-strip{ padding:56px 0; }
+    .btn-primary{ width:100%; justify-content:center; }
+  }
+
+  /* ---------- CTA STRIP ---------- */
+  .cta-strip{
+    padding: 90px 0;
+    background: var(--ink); color:var(--white); text-align:center;
+  }
+  .cta-strip h2{ color:var(--white); font-size: clamp(1.6rem, 3vw, 2.1rem); margin-bottom:16px; }
+  .cta-strip p{ color:#C9BEDD; max-width:52ch; margin:0 auto 30px; }
+  .btn-primary{
+    background: var(--amarillo); color: var(--violeta-deep); font-weight:700;
+    padding:15px 28px; border-radius:999px; text-decoration:none; font-size:0.98rem;
+    display:inline-flex; align-items:center; gap:8px;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 10px 24px -8px rgba(255,217,56,0.55); }
+
+  /* ---------- FOOTER ---------- */
+  footer{ background: var(--paper); padding: 60px 0 40px; border-top:1px solid rgba(91,27,210,0.12); }
+  .footer-grid{ display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:32px; margin-bottom:40px; }
+  .footer-brand{ display:flex; align-items:center; gap:10px; font-family:'MuseoModerno',cursive; font-weight:700; font-size:1.2rem; color:var(--violeta-deep); }
+  .footer-brand .star svg{ width:20px; height:20px; }
+  .footer-bottom{ font-size:0.82rem; color:#8A7BA3; border-top:1px solid rgba(91,27,210,0.1); padding-top:24px; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="star4" viewBox="0 0 24 24">
+      <path d="M12 0 C12.6 6.2 13.8 10.6 24 12 C13.8 13.4 12.6 17.8 12 24 C11.4 17.8 10.2 13.4 0 12 C10.2 10.6 11.4 6.2 12 0Z" fill="currentColor"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header>
+  <nav class="wrap">
+    <a href="index.html" class="brand">
+      <span class="star"><svg><use href="#star4" fill="#FFD938"/></svg></span>
+      CreateLatam
+    </a>
+    <ul>
+      <li><a href="index.html#about">Nosotras</a></li>
+      <li><a href="programas.html">Programas</a></li>
+      <li><a href="index.html#oportunidades">Oportunidades</a></li>
+      <li><a href="index.html#impacto">Impacto</a></li>
+      <li><a href="index.html#unete">Únete</a></li>
+    </ul>
+    <a href="https://forms.gle/MuPdAKK1TFcB2JFt7" target="_blank" class="nav-cta">Estamos abiertos →</a>
+  </nav>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <p class="breadcrumb"><a href="index.html">CreateLatam</a> / Programas</p>
+    <h1>Tres formas de aprender, en comunidad</h1>
+    <p>Eventos, mentorías y programas de formación — cada uno pensado para un momento distinto del camino de una chica hacia la tecnología y el diseño.</p>
+  </div>
+</section>
+
+<section class="program-detail">
+  <div class="wrap inner">
+    <div>
+      <p class="program-num">Pilar 01</p>
+      <span class="star big"><svg><use href="#star4"/></svg></span>
+      <h2>Eventos</h2>
+      <p class="desc">Charlas, talleres y bootcamps abiertos a la comunidad, con speakers internacionales que comparten cómo se ve trabajar hoy en IA, producto y STEM.</p>
+    </div>
+    <div>
+      <ul class="detail-list">
+        <li><span class="bullet-star"><svg><use href="#star4"/></svg></span>10+ speakers internacionales han pasado por nuestros eventos.</li>
+        <li><span class="bullet-star"><svg><use href="#star4"/></svg></span>Bootcamps prácticos junto a UGELs, pensados para acercar a más chicas a la tecnología.</li>
+        <li><span class="bullet-star"><svg><use href="#star4"/></svg></span>Talleres como el de Claude + Make para automatizar la búsqueda de becas.</li>
+        <li><span class="bullet-star"><svg><use href="#star4"/></svg></span>Encuentros presenciales de comunidad, como la reunión anual en PUCP.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="program-detail">
+  <div class="wrap inner">
+    <div>
+      <p class="program-num">Pilar 02</p>
+      <span class="star big"><svg><use href="#star4"/></svg></span>
+      <h2>Mentorías</h2>
+      <p class="desc">Acompañamiento personalizado de profesionales del sector para que cada chica tenga a alguien guiando su siguiente paso.</p>
+    </div>
+    <div class="sub-card">
+      <div class="tag">EmpleaLab<span>Mentorías + empleabilidad</span></div>
+      <p>Nuestra iniciativa de mentorías enfocada en preparar a las chicas para su siguiente paso profesional, con un nuevo workshop planeado para este año.</p>
+    </div>
+  </div>
+</section>
+
+<section class="program-detail">
+  <div class="wrap inner">
+    <div>
+      <p class="program-num">Pilar 03</p>
+      <span class="star big"><svg><use href="#star4"/></svg></span>
+      <h2>Programas de formación</h2>
+      <p class="desc">Formaciones estructuradas de varias semanas en IA, diseño de producto y STEM, con proyectos reales y una comunidad que sostiene el proceso hasta el final.</p>
+    </div>
+    <div>
+      <div class="sub-card">
+        <div class="tag">CEP<span>Community Engagement Project</span></div>
+        <p>Programa de educación STEM para niñas en colegios públicos de Lima, en alianza con distintas UGELs.</p>
+      </div>
+      <div class="sub-card">
+        <div class="tag">CreateWomen<span>Programa insignia</span></div>
+        <p>Reúne lo mejor de la formación en IA y diseño de producto de CreateLatam para mujeres jóvenes de la región.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-strip">
+  <div class="wrap">
+    <h2>¿Lista para ser parte?</h2>
+    <p>Estamos abiertos — postulaciones activas para voluntariado y para nuestros próximos programas.</p>
+    <a href="https://forms.gle/MuPdAKK1TFcB2JFt7" target="_blank" class="btn-primary">Sé voluntaria →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="star"><svg><use href="#star4" fill="#5B1BD2"/></svg></span>
+        CreateLatam
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 CreateLatam. Educación gratuita en IA, diseño de producto y STEM para jóvenes de Latinoamérica.
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
