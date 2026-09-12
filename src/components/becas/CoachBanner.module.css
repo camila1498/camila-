@@ -1,0 +1,26 @@
+.banner {
+  background: linear-gradient(120deg, #1a0a4a 0%, var(--violeta-deep) 60%, var(--magenta) 100%);
+  padding: 32px 0;
+}
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.inner h3 {
+  font-size: 1.3rem;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+.inner p {
+  color: var(--lavanda);
+  font-size: 0.92rem;
+  max-width: 52ch;
+}
+@media (max-width: 880px) {
+  .inner {
+    flex-direction: column;
+  }
+}
