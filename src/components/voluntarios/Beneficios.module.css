@@ -1,0 +1,58 @@
+.section {
+  padding: 90px 0;
+  background: var(--white);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.card {
+  background: var(--lavanda);
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px -18px rgba(91, 27, 210, 0.25);
+}
+.icon {
+  font-size: 2rem;
+}
+.card h4 {
+  font-family: var(--font-museo), cursive;
+  font-size: 1rem;
+  color: var(--violeta-deep);
+}
+.card p {
+  font-size: 0.88rem;
+  color: #463a57;
+  line-height: 1.6;
+}
+.cta {
+  text-align: center;
+  margin-top: 40px;
+}
+@media (max-width: 880px) {
+  .section {
+    padding: 56px 0;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .card {
+    padding: 20px;
+    flex-direction: row;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .icon {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+  }
+}

@@ -1,0 +1,101 @@
+.about {
+  padding: 108px 0 96px;
+}
+.aboutGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: start;
+}
+.aboutCopy p {
+  margin-bottom: 18px;
+  color: #463a57;
+  font-size: 1.02rem;
+}
+.aboutCopy strong {
+  color: var(--violeta-deep);
+}
+.badgeRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--lavanda);
+  color: var(--violeta-deep);
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.badge svg {
+  width: 14px;
+  height: 14px;
+}
+.aboutImage {
+  margin-top: 28px;
+  border-radius: 16px;
+  width: 100%;
+  object-fit: cover;
+  max-height: 300px;
+  display: block;
+}
+.completionCard {
+  background: linear-gradient(160deg, var(--violeta) 0%, var(--magenta) 130%);
+  border-radius: 28px;
+  padding: 40px;
+  color: var(--white);
+  position: relative;
+  overflow: hidden;
+}
+.completionCard svg {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 14px;
+}
+.figure {
+  font-family: var(--font-museo), cursive;
+  font-weight: 900;
+  font-size: 4.4rem;
+  line-height: 1;
+  color: var(--amarillo);
+}
+.cap {
+  margin-top: 10px;
+  font-size: 1.05rem;
+  max-width: 26ch;
+  color: var(--lavanda);
+}
+.completionCard::after {
+  content: "";
+  position: absolute;
+  right: -40px;
+  bottom: -40px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 217, 56, 0.35), transparent 70%);
+}
+@media (max-width: 880px) {
+  .about {
+    padding: 60px 0;
+  }
+  .aboutGrid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .figure {
+    font-size: 3.5rem;
+  }
+  .badgeRow {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .badge {
+    font-size: 0.8rem;
+  }
+}

@@ -1,0 +1,37 @@
+.sectionHead {
+  max-width: 640px;
+  margin-bottom: 56px;
+}
+.center {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+.sectionHead .eyebrow {
+  color: var(--magenta);
+  margin-bottom: 14px;
+}
+.sectionHead h2 {
+  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+  color: var(--violeta-deep);
+}
+.sectionHead p {
+  margin-top: 16px;
+  font-size: 1.05rem;
+  color: #463a57;
+  max-width: 56ch;
+}
+.light h2 {
+  color: var(--white);
+}
+.light p {
+  color: #c9bedd;
+}
+@media (max-width: 880px) {
+  .sectionHead {
+    margin-bottom: 36px;
+  }
+  .sectionHead h2 {
+    font-size: clamp(1.6rem, 6vw, 2.2rem);
+  }
+}

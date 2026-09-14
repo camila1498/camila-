@@ -1,0 +1,138 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 18, 37, 0.85);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+.box {
+  background: var(--white);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 460px;
+  overflow: hidden;
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+.overlay.active .box {
+  transform: translateY(0);
+}
+.close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #8a7ba3;
+  line-height: 1;
+  z-index: 1;
+}
+
+.login {
+  padding: 48px 40px;
+  text-align: center;
+}
+.login svg {
+  width: 36px;
+  height: 36px;
+  margin: 0 auto 20px;
+}
+.login h2 {
+  color: var(--violeta-deep);
+  margin-bottom: 8px;
+  font-size: 1.5rem;
+}
+.login p {
+  color: #463a57;
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+.input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 2px solid rgba(91, 27, 210, 0.2);
+  border-radius: 12px;
+  font-family: var(--font-be-vietnam), sans-serif;
+  font-size: 1rem;
+  text-align: center;
+  letter-spacing: 0.1em;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 12px;
+}
+.input:focus {
+  border-color: var(--violeta);
+}
+.input.error {
+  border-color: var(--magenta);
+  animation: shake 0.3s ease;
+}
+.button {
+  width: 100%;
+  background: var(--amarillo);
+  color: var(--violeta-deep);
+  font-weight: 700;
+  padding: 14px;
+  border-radius: 999px;
+  border: none;
+  font-family: var(--font-museo), cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.button:hover {
+  transform: translateY(-2px);
+}
+.errorText {
+  color: var(--magenta);
+  font-size: 0.83rem;
+  margin-top: 8px;
+}
+
+.dashboard {
+  display: block;
+}
+.dashHeader {
+  background: radial-gradient(120% 140% at 15% 0%, var(--violeta-deep), var(--violeta));
+  padding: 32px 40px 28px;
+  color: var(--white);
+}
+.dashHeader h2 {
+  color: var(--white);
+  font-size: 1.4rem;
+  margin-bottom: 6px;
+}
+.dashHeader p {
+  color: var(--lavanda);
+  font-size: 0.88rem;
+}
+.dashBody {
+  padding: 20px 24px;
+}
+@media (max-width: 600px) {
+  .login {
+    padding: 32px 24px;
+  }
+  .dashHeader {
+    padding: 24px;
+  }
+  .dashBody {
+    padding: 14px;
+  }
+}

@@ -1,0 +1,61 @@
+.allies {
+  padding: 96px 0;
+  background: var(--white);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+.slot {
+  border: 1.5px dashed rgba(91, 27, 210, 0.28);
+  border-radius: 16px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a7ba3;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+  padding: 12px;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+.slot:hover {
+  border-color: var(--violeta);
+  color: var(--violeta-deep);
+}
+.note {
+  margin-top: 28px;
+  font-size: 0.9rem;
+  color: #463a57;
+  text-align: center;
+}
+.note a {
+  color: var(--magenta);
+  font-weight: 600;
+  text-decoration: none;
+}
+.note a:hover {
+  text-decoration: underline;
+}
+@media (max-width: 880px) {
+  .allies {
+    padding: 60px 0;
+  }
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .slot {
+    height: 80px;
+    font-size: 0.82rem;
+  }
+}
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

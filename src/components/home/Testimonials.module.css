@@ -1,0 +1,60 @@
+.testimonials {
+  padding: 100px 0;
+  background: var(--lavanda);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border: 1px solid rgba(91, 27, 210, 0.1);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px -18px rgba(91, 27, 210, 0.25);
+}
+.card p {
+  font-size: 0.95rem;
+  color: #463a57;
+  line-height: 1.7;
+  font-style: italic;
+  flex-grow: 1;
+}
+.author {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.author strong {
+  font-size: 0.88rem;
+  color: var(--violeta-deep);
+  font-style: normal;
+}
+.author span {
+  font-size: 0.78rem;
+  color: #8a7ba3;
+}
+@media (max-width: 880px) {
+  .testimonials {
+    padding: 60px 0;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+@media (max-width: 480px) {
+  .card {
+    padding: 20px;
+  }
+}

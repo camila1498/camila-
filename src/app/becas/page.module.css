@@ -1,0 +1,20 @@
+.heroStats {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.stat .num {
+  font-family: var(--font-museo), cursive;
+  font-weight: 900;
+  font-size: 2rem;
+  color: var(--amarillo);
+}
+.stat .cap {
+  font-size: 0.78rem;
+  color: var(--lavanda);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.becasSection {
+  padding: 8px 0 80px;
+}
