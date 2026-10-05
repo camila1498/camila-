@@ -2,30 +2,36 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import TeamByArea from "@/components/voluntarios/TeamByArea";
 import Beneficios from "@/components/voluntarios/Beneficios";
 import RolesAbiertos from "@/components/voluntarios/RolesAbiertos";
-import { CONTACT_EMAIL } from "@/lib/constants";
+import { CONTACT_EMAIL, VOLUNTEER_FORM_URL } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: "Voluntarios — CreateLatam",
+  title: "Únete — CreateLatam",
 };
 
-export default function VoluntariosPage() {
+export default function UnetePage() {
   return (
     <>
       <Header />
       <section className="page-hero">
         <div className="wrap">
           <p className="breadcrumb">
-            <Link href="/">CreateLatam</Link> / Voluntarios
+            <Link href="/">CreateLatam</Link> / Únete
           </p>
-          <h1>Los voluntarios detrás de CreateLatam</h1>
-          <p>25 voluntarios, repartidos en distintas áreas, sosteniendo la operación día a día.</p>
+          <h1>Estamos construyendo nuestra próxima etapa</h1>
+          <p>
+            Estamos relanzando CreateLatam con una nueva estructura. Si quieres ser parte de la
+            comunidad que forma a la próxima generación de mujeres en tech, este es el momento.
+          </p>
+          <p style={{ marginTop: 24 }}>
+            <a href={VOLUNTEER_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary">
+              Formulario de voluntario →
+            </a>
+          </p>
         </div>
       </section>
 
-      <TeamByArea />
       <Beneficios />
       <RolesAbiertos />
 

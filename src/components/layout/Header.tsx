@@ -1,78 +1,48 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import StarIcon from "@/components/ui/StarIcon";
-import { VOLUNTEER_FORM_URL } from "@/lib/constants";
 
-type HeaderProps = {
-  /** Solo se pasa en home: abre el modal de Becas en vez de navegar. */
-  onOpenBecas?: () => void;
-};
+const links = [
+  { href: "/", label: "Home" },
+  { href: "/programas", label: "Programas" },
+  { href: "/equipo", label: "Equipo" },
+  { href: "/becas", label: "Oportunidades" },
+  { href: "/unete", label: "Únete" },
+];
 
-export default function Header({ onOpenBecas }: HeaderProps) {
-  const isHome = Boolean(onOpenBecas);
+export default function Header() {
+  const pathname = usePathname();
+
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <header>
       <nav className="wrap">
-        <Link href={isHome ? "#top" : "/"} className="brand">
+        <Link href="/" className="brand">
           <span className="star">
             <StarIcon size={22} fill="#FFD938" />
           </span>
           CreateLatam
         </Link>
         <ul>
-          <li>
-            <Link href={isHome ? "#about" : "/#about"}>Nosotras</Link>
-          </li>
-          <li>
-            <Link href="/programas">Programas</Link>
-          </li>
-          <li>
-            {onOpenBecas ? (
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onOpenBecas();
-                }}
+          {links.map((link) => (
+            <li key={link.href}>
+              <Link
+                href={link.href}
+                className={isActive(link.href) ? "active" : undefined}
+                aria-current={isActive(link.href) ? "page" : undefined}
               >
-                Oportunidades
-              </a>
-            ) : (
-              <Link href="/#oportunidades">Oportunidades</Link>
-            )}
-          </li>
-          <li>
-            <Link href={isHome ? "#impacto" : "/#impacto"}>Impacto</Link>
-          </li>
-          <li>
-            <Link href={isHome ? "#unete" : "/#unete"}>Únete</Link>
-          </li>
-          {onOpenBecas && (
-            <li>
-              <a
-                href="#"
-                style={{ color: "var(--magenta)", fontWeight: 600 }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  onOpenBecas();
-                }}
-              >
-                🔐 Becas
-              </a>
+                {link.label}
+              </Link>
             </li>
-          )}
+          ))}
         </ul>
-        {isHome ? (
-          <Link href="#unete" className="nav-cta">
-            Postula →
-          </Link>
-        ) : (
-          <a href={VOLUNTEER_FORM_URL} target="_blank" rel="noreferrer" className="nav-cta">
-            Estamos abiertos →
-          </a>
-        )}
+        <Link href="/unete" className="nav-cta">
+          Estamos abiertos →
+        </Link>
       </nav>
     </header>
   );

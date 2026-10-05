@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { VOLUNTEER_FORM_URL } from "@/lib/constants";
 import styles from "./Hero.module.css";
 
 export default function Hero() {
@@ -23,9 +22,9 @@ export default function Hero() {
             través de eventos, mentorías y programas gratuitos.
           </p>
           <div className={styles.heroCtas}>
-            <a href={VOLUNTEER_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary">
+            <Link href="/unete" className="btn-primary">
               Sé voluntaria →
-            </a>
+            </Link>
             <Link href="/programas" className="btn-ghost">
               Ver programas
             </Link>

@@ -46,6 +46,3 @@ export const teamMembers: TeamMember[] = [
   { name: "Nayr Jimena Oliveros Asayag", area: "Proyectos" },
   { name: "Olenka Andrea Martinez Mendoza", area: "Proyectos" },
 ];
-
-/** Las primeras 4 personas, tal como aparecen en el preview de equipo de home. */
-export const teamPreview = teamMembers.slice(0, 4);

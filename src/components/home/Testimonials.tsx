@@ -1,48 +1,27 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import SectionHead from "@/components/ui/SectionHead";
+import { testimonials } from "@/data/testimonials";
 import styles from "./Testimonials.module.css";
 
-const testimonials = [
-  {
-    quote:
-      "Impactó en mi desarrollo profesional gracias a las sesiones donde aprendí sobre IA, Design Thinking y más. En lo personal, mejoré mi confianza y habilidades de liderazgo — al preparar la presentación final y recibir feedback me di cuenta que tengo mucho por lo que sentirme orgullosa.",
-    author: "Fabiana Andrea Lázaro Mogollón",
-    role: "Participante · CreateLatam",
-  },
-  {
-    quote:
-      "En CreateLatam me enteré de un programa llamado Next al que decidí postular contando cómo trabajar en Create me había permitido adquirir conocimientos — y logré ingresar. Fue una experiencia inolvidable que me permitió confiar más en mí.",
-    author: "Madelen Argote",
-    role: "Participante · CreateLatam",
-  },
-  {
-    quote:
-      "CreateLatam impactó positivamente en mi desarrollo personal, me permitió descubrir oportunidades y visualizar que sí eran posibles de alcanzar. Gracias a su apoyo, tengo herramientas para mejorar mi desarrollo como persona y como profesional.",
-    author: "Amirha Palacios Mucarsel",
-    role: "Participante · CreateLatam",
-  },
-  {
-    quote:
-      "Pude ser aceptada en otros voluntariados, conocí más el ámbito de la IA y las oportunidades que se pueden alcanzar con solo saber qué palabras clave buscar.",
-    author: "Shashenka Yammelí Arroyo Lavilla",
-    role: "Participante · CreateLatam",
-  },
-  {
-    quote:
-      "Tuve la oportunidad de ser una de las 200 Embajadoras, un programa donde niñas de todo el Perú pudieron aprender y crear proyectos. A lo largo del programa aprendí cosas nuevas que no hubiera imaginado.",
-    author: "Yadel Milagros Flores Flores",
-    role: "Embajadora · 200 Embajadoras Perú",
-  },
-  {
-    quote:
-      "Gané una beca de liderazgo que me interesaba hace mucho tiempo. El programa y las sesiones con mi mentora me fortalecieron y empoderaron para tomar la decisión de postular a oportunidades a las que antes no me sentía preparado.",
-    author: "Jeanpaul Villena",
-    role: "Participante · CreateLatam",
-  },
-];
+const AUTOPLAY_MS = 8000;
 
 export default function Testimonials() {
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const total = testimonials.length;
+
+  const go = (next: number) => setIndex((next + total) % total);
+
+  useEffect(() => {
+    if (paused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % total), AUTOPLAY_MS);
+    return () => clearInterval(id);
+  }, [paused, total]);
+
   return (
-    <section className={styles.testimonials}>
+    <section className={styles.testimonials} id="testimonios">
       <div className="wrap">
         <SectionHead
           eyebrow="Testimonios"
@@ -50,15 +29,63 @@ export default function Testimonials() {
           description="Historias reales de quienes pasaron por nuestros programas."
           center
         />
-        <div className={styles.grid}>
-          {testimonials.map((t) => (
-            <div className={styles.card} key={t.author}>
-              <p>&quot;{t.quote}&quot;</p>
-              <div className={styles.author}>
-                <strong>{t.author}</strong>
-                <span>{t.role}</span>
-              </div>
+        <div
+          className={styles.carousel}
+          role="region"
+          aria-roledescription="carrusel"
+          aria-label="Testimonios"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onFocus={() => setPaused(true)}
+          onBlur={() => setPaused(false)}
+        >
+          <button
+            type="button"
+            className={styles.arrow}
+            onClick={() => go(index - 1)}
+            aria-label="Testimonio anterior"
+          >
+            ←
+          </button>
+          <div className={styles.viewport}>
+            <div className={styles.track} style={{ transform: `translateX(-${index * 100}%)` }}>
+              {testimonials.map((t, i) => (
+                <figure
+                  className={styles.slide}
+                  key={t.author}
+                  aria-hidden={i !== index}
+                  aria-label={`${i + 1} de ${total}`}
+                >
+                  <blockquote className={styles.card}>
+                    <p>&quot;{t.quote}&quot;</p>
+                    <footer className={styles.author}>
+                      <strong>{t.author}</strong>
+                      <span>{t.role}</span>
+                    </footer>
+                  </blockquote>
+                </figure>
+              ))}
             </div>
+          </div>
+          <button
+            type="button"
+            className={styles.arrow}
+            onClick={() => go(index + 1)}
+            aria-label="Testimonio siguiente"
+          >
+            →
+          </button>
+        </div>
+        <div className={styles.dots}>
+          {testimonials.map((t, i) => (
+            <button
+              type="button"
+              key={t.author}
+              className={`${styles.dot} ${i === index ? styles.dotActive : ""}`}
+              onClick={() => go(i)}
+              aria-label={`Ir al testimonio ${i + 1}`}
+              aria-current={i === index}
+            />
           ))}
         </div>
       </div>
