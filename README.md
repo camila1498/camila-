@@ -29,9 +29,23 @@ Sin las variables de entorno, `/oportunidades` muestra un aviso en vez del lista
    - **CLI**: `npx supabase login`, `npx supabase link --project-ref <ref>`, `npx supabase db push`
      y ejecuta `supabase/seed.sql` (SQL Editor o `npx supabase db push --include-seed`).
    - **Sin CLI**: pega `supabase/migrations/*.sql` y luego `supabase/seed.sql` en el SQL Editor.
-4. Para dar acceso de administrador (lo usará el panel de becas), crea el usuario en
-   Authentication y ejecuta en el SQL Editor:
+4. Aplica también la migración `20261006000000_becas_rank.sql` (reordenar el ranking).
+
+## Panel de administración (`/admin`)
+
+Gestiona las becas: crear, editar, eliminar, ocultar/publicar y asignar el ranking. Entra con
+un enlace por correo (Supabase Auth); solo los usuarios de la tabla `admins` pueden editar
+(lo exige RLS, no solo la interfaz).
+
+1. En Supabase → Authentication → URL Configuration, agrega en **Redirect URLs**
+   `https://TU-DOMINIO/auth/callback` y `http://localhost:3011/auth/callback` (y el dominio de
+   Preview de Vercel si quieres probar ahí).
+2. Crea el usuario en Authentication → Users (nadie puede registrarse desde la web).
+3. Dale acceso de admin en el SQL Editor:
    `insert into public.admins (user_id) select id from auth.users where email = 'correo@ejemplo.org';`
+4. Entra en `/admin`, escribe el correo y abre el enlace **en el mismo navegador**.
+
+Los cambios aparecen en `/oportunidades` al instante (el panel invalida la caché).
 
 ## Estructura del sitio
 
@@ -55,20 +69,21 @@ src/
     programas/, voluntarios/  Componentes de esas páginas
     becas/                   Listado de becas con buscador, filtros y pestañas
   data/                      Contenido tipado (equipo, programas, testimonios) y tipos de becas
-  lib/supabase/              Cliente público de Supabase; lib/becas.ts lee las becas
+  lib/supabase/              Clientes de Supabase (público, servidor, navegador, middleware)
+  lib/admin/                 Autenticación de admin y validación del formulario de becas
+  components/admin/          Formulario y botón de eliminar del panel
   lib/constants.ts           Links externos (Google Forms) y email de contacto
 ```
 
 ### Ranking de oportunidades
 
 La pestaña **Rankeadas** muestra las becas que tengan `rank` (1 = mejor), ordenadas; una beca
-sin `rank` solo aparece en **Database**. Hoy se edita en la tabla `becas` de Supabase; el panel
-admin lo hará desde la web. Los cambios se reflejan en `/oportunidades` en hasta 1 minuto.
+sin `rank` solo aparece en **Database**. Se asigna desde el panel
+admin; si la posición ya la tiene otra beca, las dos intercambian.
 
 ## Próximos pasos
 
-- **Panel administrativo de becas** con autenticación real (crear, editar, publicar y rankear).
 - **Supabase para el resto del contenido** (equipo, programas, testimonios), hoy en `src/data/`.
 - **Formularios propios** para mentee (Emplealab, Createwomen) y voluntario, guardados en
   Supabase (hoy apuntan a Google Forms vía `src/lib/constants.ts`).
-- **Panel administrativo** con autenticación real para ver, exportar y archivar respuestas.
+- **Respuestas de formularios en el panel**: verlas, exportarlas y archivar las antiguas.
