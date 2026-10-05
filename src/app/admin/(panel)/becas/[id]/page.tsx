@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import BecaForm, { type BecaFormValues } from "@/components/admin/BecaForm";
 import ConfirmDeleteButton from "@/components/admin/ConfirmDeleteButton";
-import { requireAdminOrThrow } from "@/lib/admin/auth";
+import { requireRole } from "@/lib/admin/auth";
 import styles from "../../../admin.module.css";
 import { deleteBeca, updateBeca } from "../actions";
 
@@ -19,7 +19,7 @@ export default async function EditarBecaPage({
   const { error } = await searchParams;
   if (!UUID.test(id)) notFound();
 
-  const { supabase } = await requireAdminOrThrow();
+  const { supabase } = await requireRole("admin");
   const { data } = await supabase
     .from("becas")
     .select("slug,label,tag_variant,estado,title,institution,description,deadline,tags,url,published")

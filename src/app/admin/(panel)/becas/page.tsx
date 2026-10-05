@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireAdminOrThrow } from "@/lib/admin/auth";
+import { requireRole } from "@/lib/admin/auth";
 import styles from "../../admin.module.css";
 import { setPublished, setRank } from "./actions";
 
@@ -18,7 +18,7 @@ export default async function AdminBecasPage({
   searchParams: Promise<{ ok?: string; error?: string }>;
 }) {
   const { ok, error } = await searchParams;
-  const { supabase } = await requireAdminOrThrow();
+  const { supabase } = await requireRole("admin");
 
   const { data, error: loadError } = await supabase
     .from("becas")

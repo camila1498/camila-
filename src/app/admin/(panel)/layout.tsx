@@ -1,46 +1,49 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { requireAdmin } from "@/lib/admin/auth";
-import { signOut } from "./becas/actions";
+import AdminShell from "@/components/admin/AdminShell";
+import { requireMember, roleLabels } from "@/lib/admin/auth";
+import { navFor } from "@/lib/admin/nav";
+import { signOut } from "./actions";
 import styles from "../admin.module.css";
 
 export const metadata: Metadata = {
-  title: "Admin — CreateLatam",
+  title: "Plataforma — CreateLatam",
   robots: { index: false, follow: false },
 };
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
-  const { user, isAdmin } = await requireAdmin();
+  const { user, role } = await requireMember();
+
+  if (!role) {
+    return (
+      <div className={styles.noAccess}>
+        <h1>Sin acceso</h1>
+        <p>
+          Tu cuenta ({user.email}) no está registrada o fue desactivada. Pide acceso al equipo de
+          CreateLatam.
+        </p>
+        <form action={signOut}>
+          <button type="submit" className={styles.btnGhost}>
+            Cerrar sesión
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  const meta = user.user_metadata as { full_name?: string; name?: string; avatar_url?: string; picture?: string };
 
   return (
-    <div className={styles.shell}>
-      <header className={styles.bar}>
-        <div className={styles.brand}>
-          <Link href="/admin/becas">CreateLatam · Admin</Link>
-        </div>
-        <div className={styles.user}>
-          <span>{user.email}</span>
-          <Link href="/oportunidades" className={styles.btnGhost}>
-            Ver sitio
-          </Link>
-          <form action={signOut}>
-            <button type="submit" className={styles.btnGhost}>
-              Salir
-            </button>
-          </form>
-        </div>
-      </header>
-      {isAdmin ? (
-        <main className={styles.main}>{children}</main>
-      ) : (
-        <div className={styles.noAccess}>
-          <h1>Sin acceso</h1>
-          <p>
-            Tu cuenta ({user.email}) no tiene permisos de administrador. Pídele a quien administra
-            el proyecto que te agregue.
-          </p>
-        </div>
-      )}
-    </div>
+    <AdminShell
+      sections={navFor(role)}
+      user={{
+        email: user.email ?? "",
+        name: meta.full_name ?? meta.name ?? null,
+        avatar: meta.avatar_url ?? meta.picture ?? null,
+      }}
+      roleLabel={roleLabels[role]}
+      signOutAction={signOut}
+    >
+      {children}
+    </AdminShell>
   );
 }

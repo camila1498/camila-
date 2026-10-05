@@ -1,0 +1,45 @@
+import type { Role } from "./auth";
+
+export type NavItem = {
+  href: string;
+  label: string;
+  icon: "dashboard" | "becas" | "members" | "bootcamps" | "visitors";
+  /** Roles que ven el item. Para sumar vistas de equipo/estudiantes basta ampliar esta lista. */
+  roles: Role[];
+  /** Vistas planeadas que aun no existen: se muestran deshabilitadas. */
+  soon?: boolean;
+};
+
+export type NavSection = { title: string; items: NavItem[] };
+
+export const navSections: NavSection[] = [
+  {
+    title: "General",
+    items: [{ href: "/admin", label: "Dashboard", icon: "dashboard", roles: ["admin", "team", "student"] }],
+  },
+  {
+    title: "Contenido",
+    items: [{ href: "/admin/becas", label: "Becas", icon: "becas", roles: ["admin"] }],
+  },
+  {
+    title: "Comunidad",
+    items: [
+      { href: "/admin/bootcamps", label: "Inscritos en bootcamps", icon: "bootcamps", roles: ["admin"], soon: true },
+      { href: "/admin/visitantes", label: "Visitantes", icon: "visitors", roles: ["admin"], soon: true },
+    ],
+  },
+  {
+    title: "Administración",
+    items: [{ href: "/admin/miembros", label: "Miembros", icon: "members", roles: ["admin"] }],
+  },
+];
+
+export function navFor(role: Role | null): NavSection[] {
+  if (!role) return [];
+  return navSections
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => item.roles.includes(role)),
+    }))
+    .filter((section) => section.items.length > 0);
+}

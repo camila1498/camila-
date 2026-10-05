@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdminOrThrow } from "@/lib/admin/auth";
 import { parseBecaForm } from "@/lib/admin/becas-schema";
-import { createClient } from "@/lib/supabase/server";
 
 function done(message: string): never {
   redirect(`/admin/becas?ok=${encodeURIComponent(message)}`);
@@ -81,10 +80,4 @@ export async function setRank(id: string, formData: FormData) {
 
   refreshPublic();
   done("Ranking actualizado");
-}
-
-export async function signOut() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  redirect("/admin/login");
 }

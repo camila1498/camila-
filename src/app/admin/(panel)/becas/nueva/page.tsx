@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireRole } from "@/lib/admin/auth";
 import BecaForm from "@/components/admin/BecaForm";
 import styles from "../../../admin.module.css";
 import { createBeca } from "../actions";
@@ -8,6 +9,7 @@ export default async function NuevaBecaPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  await requireRole("admin");
   const { error } = await searchParams;
 
   return (

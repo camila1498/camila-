@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import LoginForm from "./LoginForm";
+import Link from "next/link";
+import StarIcon from "@/components/ui/StarIcon";
+import LoginCard from "./LoginCard";
 import styles from "../admin.module.css";
 
 export const metadata: Metadata = {
-  title: "Acceso — Admin CreateLatam",
+  title: "Ingresar — CreateLatam",
   robots: { index: false, follow: false },
 };
 
@@ -17,9 +19,15 @@ export default async function LoginPage({
   return (
     <main className={styles.login}>
       <div className={styles.loginBox}>
-        <h1>Panel de administración</h1>
-        <p>Ingresa con tu correo de administrador. Te enviaremos un enlace de acceso.</p>
-        <LoginForm initialError={error} />
+        <span className={styles.loginMark}>
+          <StarIcon size={28} fill="#5B1BD2" />
+        </span>
+        <h1>Plataforma CreateLatam</h1>
+        <p>Acceso solo para miembros registrados. Ingresa con tu cuenta de Google.</p>
+        <LoginCard initialError={error} />
+        <Link href="/" className={styles.loginBack}>
+          ← Volver al sitio
+        </Link>
       </div>
     </main>
   );
