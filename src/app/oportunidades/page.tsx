@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import BecasAccessGate from "@/components/becas/BecasAccessGate";
 import CoachBanner from "@/components/becas/CoachBanner";
 import OportunidadesTabs from "@/components/becas/OportunidadesTabs";
 import { becas } from "@/data/becas";
@@ -14,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function BecasPage() {
   return (
-    <BecasAccessGate>
+    <>
       <Header />
       <section className="page-hero">
         <div className="wrap">
@@ -52,6 +51,6 @@ export default function BecasPage() {
       </section>
 
       <Footer />
-    </BecasAccessGate>
+    </>
   );
 }

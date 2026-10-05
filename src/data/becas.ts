@@ -15,7 +15,7 @@ export type Beca = {
 };
 
 /**
- * Lista canónica de becas del "Dashboard de Becas". La maqueta original tenía esta
+ * Lista canónica de becas. La maqueta original tenía esta
  * misma lista duplicada (con distinto tamaño y datos parcialmente desincronizados)
  * en becas.html y en el modal de index.html — se usa becas.html como fuente porque
  * es la más completa ("50+ oportunidades").

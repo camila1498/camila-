@@ -16,43 +16,40 @@ npm run dev
 
 Abre http://localhost:3000
 
+## Estructura del sitio
+
+| Ruta | Contenido |
+|---|---|
+| `/` | Home: reseña, aliados, cifras, testimonios (carrusel), contacto |
+| `/programas`, `/programas/[slug]` | Emplealab, Createwomen, Eventos |
+| `/equipo` | Voluntarios por área (`/voluntarios` redirige aquí) |
+| `/oportunidades` | Becas: pestañas Database y Rankeadas, públicas (`/becas` redirige aquí) |
+| `/unete` | Beneficios, roles abiertos y formulario de voluntario |
+
 ## Arquitectura
 
 ```
 src/
-  app/
-    page.tsx                Home
-    programas/page.tsx       /programas
-    voluntarios/page.tsx      /voluntarios
-    becas/page.tsx            /becas (dashboard de becas)
-    layout.tsx, globals.css   Layout raíz, fuentes y tokens de diseño compartidos
-
+  app/                       Rutas (App Router), layout raíz y tokens de diseño (globals.css)
   components/
-    layout/                  Header y Footer (compartidos por todas las páginas)
-    ui/                       StarIcon, SectionHead
-    home/                     Secciones de la landing (Hero, About, Programs, ...)
-    programas/, voluntarios/  Componentes específicos de esas páginas
-    becas/                    Dashboard de becas + el gate de acceso + el modal de home
-
-  data/                      Contenido tipado (equipo, programas, iniciativas, becas, ...)
-  lib/constants.ts           Links externos (Google Forms, email de contacto, clave de becas)
+    layout/                  Header y Footer
+    ui/                      StarIcon, SectionHead
+    home/                    Secciones de la landing
+    programas/, voluntarios/  Componentes de esas páginas
+    becas/                   Listado de becas con buscador, filtros y pestañas
+  data/                      Contenido tipado (equipo, programas, becas, testimonios)
+  lib/constants.ts           Links externos (Google Forms) y email de contacto
 ```
 
-### Dashboard de Becas
+### Ranking de oportunidades
 
-El dashboard de becas (`/becas`, y también accesible como modal desde home) está protegido
-por una clave simple recordada en `sessionStorage` (`src/components/becas/useBecasAccess.ts`).
-**No es autenticación real** — es el mismo mecanismo placeholder de la maqueta original, la
-clave viaja en texto plano en el bundle del cliente. Reemplazarlo por autenticación real
-(Supabase Auth) es parte del roadmap.
+La pestaña **Rankeadas** muestra las becas de `src/data/becas.ts` que tengan el campo `rank`
+(1 = mejor), ordenadas. Una beca sin `rank` solo aparece en **Database**.
 
-## Próximos pasos (fuera del alcance de esta migración)
+## Próximos pasos
 
-- **Supabase como CMS/dashboard de impacto**: hoy el equipo, los programas, las iniciativas y
-  las becas viven como arrays estáticos en `src/data/`. Son el punto de enganche natural para
-  reemplazar por datos de Supabase — el cambio sería acotado a cada archivo de `data/`, sin
-  tocar los componentes de UI.
-- **Autenticación real** para reemplazar el gate de clave de `/becas`.
-- **Formularios propios** para talleres, bootcamps y eventos (hoy todos apuntan a Google Forms
-  externos vía `src/lib/constants.ts`).
-- **Registro de usuarios y eventos** una vez exista la base de datos.
+- **Supabase como CMS/dashboard de impacto**: hoy el contenido vive como arrays estáticos en
+  `src/data/`; son el punto de enganche para reemplazarlos por datos de Supabase.
+- **Formularios propios** para mentee (Emplealab, Createwomen) y voluntario, guardados en
+  Supabase (hoy apuntan a Google Forms vía `src/lib/constants.ts`).
+- **Panel administrativo** con autenticación real para ver, exportar y archivar respuestas.
