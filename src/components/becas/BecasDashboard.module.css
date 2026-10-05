@@ -58,16 +58,8 @@
 
 .grid {
   display: grid;
-  gap: 20px;
-}
-.grid[data-variant="page"] {
   grid-template-columns: repeat(3, 1fr);
-}
-.grid[data-variant="modal"] {
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-  max-height: 400px;
-  overflow-y: auto;
+  gap: 20px;
 }
 
 .card {
@@ -85,11 +77,6 @@
 .card:hover {
   transform: translateY(-4px);
   box-shadow: 0 16px 32px -18px rgba(91, 27, 210, 0.3);
-}
-.grid[data-variant="modal"] .card {
-  padding: 18px;
-  border-radius: 14px;
-  gap: 10px;
 }
 .cardTop {
   display: flex;
@@ -132,9 +119,6 @@
   color: var(--violeta-deep);
   line-height: 1.35;
 }
-.grid[data-variant="modal"] .card h3 {
-  font-size: 0.88rem;
-}
 .inst {
   font-size: 0.82rem;
   color: #8a7ba3;
@@ -149,10 +133,6 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-.grid[data-variant="modal"] .desc {
-  -webkit-line-clamp: 2;
-  font-size: 0.8rem;
 }
 .cardFooter {
   display: flex;
@@ -177,10 +157,10 @@
 }
 
 @media (max-width: 880px) {
-  .grid[data-variant="page"] {
+  .grid {
     grid-template-columns: 1fr;
   }
-  .filters {
+    .filters {
     flex-direction: column;
     align-items: stretch;
   }
@@ -189,7 +169,4 @@
   }
 }
 @media (max-width: 600px) {
-  .grid[data-variant="modal"] {
-    grid-template-columns: 1fr;
   }
-}

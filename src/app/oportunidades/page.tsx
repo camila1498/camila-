@@ -4,11 +4,12 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import BecasAccessGate from "@/components/becas/BecasAccessGate";
 import CoachBanner from "@/components/becas/CoachBanner";
-import BecasDashboard from "@/components/becas/BecasDashboard";
+import OportunidadesTabs from "@/components/becas/OportunidadesTabs";
+import { becas } from "@/data/becas";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Dashboard de Becas — CreateLatam",
+  title: "Oportunidades — CreateLatam",
 };
 
 export default function BecasPage() {
@@ -18,16 +19,16 @@ export default function BecasPage() {
       <section className="page-hero">
         <div className="wrap">
           <p className="breadcrumb">
-            <Link href="/">CreateLatam</Link> / Becas
+            <Link href="/">CreateLatam</Link> / Oportunidades
           </p>
-          <h1>Dashboard de Becas 🌟</h1>
+          <h1>Oportunidades 🌟</h1>
           <p>
             Todas las oportunidades que vamos encontrando para la comunidad — filtradas,
             organizadas y listas para postular.
           </p>
           <div className={styles.heroStats}>
             <div className={styles.stat}>
-              <div className={styles.num}>50+</div>
+              <div className={styles.num}>{becas.length}</div>
               <div className={styles.cap}>Oportunidades</div>
             </div>
             <div className={styles.stat}>
@@ -46,7 +47,7 @@ export default function BecasPage() {
 
       <section className={styles.becasSection}>
         <div className="wrap">
-          <BecasDashboard variant="page" />
+          <OportunidadesTabs />
         </div>
       </section>
 

@@ -10,6 +10,8 @@ export type Beca = {
   description: string;
   deadline: string;
   tags: string[];
+  /** Posición en "Rankeadas" (1 = mejor). Sin rank = solo aparece en Database. */
+  rank?: number;
 };
 
 /**
@@ -509,3 +511,8 @@ export const becaFilters: { value: string; label: string }[] = [
   { value: "stem", label: "STEM" },
   { value: "completa", label: "Financiada 100%" },
 ];
+
+/** Becas con ranking asignado por el equipo, ordenadas de mejor a peor. */
+export const becasRankeadas = becas
+  .filter((beca): beca is Beca & { rank: number } => beca.rank !== undefined)
+  .sort((a, b) => a.rank - b.rank);

@@ -9,7 +9,7 @@ type BecasAccessGateProps = {
   children: ReactNode;
 };
 
-/** Gate de página completa usado por /becas — igual al overlay de la maqueta original. */
+/** Gate de página completa usado por /oportunidades — igual al overlay de la maqueta original. */
 export default function BecasAccessGate({ children }: BecasAccessGateProps) {
   const { unlocked, error, verify } = useBecasAccess();
   const [value, setValue] = useState("");

@@ -26,7 +26,7 @@ export default function Footer() {
                   <Link href="/equipo">Equipo</Link>
                 </li>
                 <li>
-                  <Link href="/becas">Oportunidades</Link>
+                  <Link href="/oportunidades">Oportunidades</Link>
                 </li>
                 <li>
                   <Link href="/unete">Únete</Link>

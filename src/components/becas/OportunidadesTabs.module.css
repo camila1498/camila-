@@ -1,0 +1,31 @@
+.tabs {
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px;
+  background: var(--lavanda);
+  border-radius: 999px;
+  margin-bottom: 28px;
+}
+.tab {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font-museo), cursive;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--violeta-deep);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+.tab.active {
+  background: var(--violeta);
+  color: var(--white);
+}
+.count {
+  font-family: var(--font-be-vietnam), sans-serif;
+  font-size: 0.78rem;
+  opacity: 0.8;
+}

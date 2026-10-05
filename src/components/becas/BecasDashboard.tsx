@@ -1,26 +1,28 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { becaFilters, becas } from "@/data/becas";
+import { type Beca, becaFilters } from "@/data/becas";
 import styles from "./BecasDashboard.module.css";
 
 type BecasDashboardProps = {
-  variant: "page" | "modal";
+  items: Beca[];
+  emptyMessage?: string;
+  showRank?: boolean;
 };
 
-export default function BecasDashboard({ variant }: BecasDashboardProps) {
+export default function BecasDashboard({ items, emptyMessage, showRank }: BecasDashboardProps) {
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
-    return becas.filter((beca) => {
+    return items.filter((beca) => {
       const matchesFilter = activeFilter === "all" || beca.tags.includes(activeFilter);
       const haystack = `${beca.title} ${beca.institution} ${beca.description} ${beca.label}`.toLowerCase();
       const matchesSearch = !q || haystack.includes(q);
       return matchesFilter && matchesSearch;
     });
-  }, [query, activeFilter]);
+  }, [items, query, activeFilter]);
 
   return (
     <div>
@@ -44,24 +46,34 @@ export default function BecasDashboard({ variant }: BecasDashboardProps) {
             {filter.label}
           </button>
         ))}
-        {filtered.length !== becas.length && (
+        {filtered.length !== items.length && (
           <span className={styles.resultsCount}>
             {filtered.length} resultado{filtered.length !== 1 ? "s" : ""}
           </span>
         )}
       </div>
 
-      <div className={styles.grid} data-variant={variant}>
+      <div className={styles.grid}>
         {filtered.length === 0 ? (
           <div className={styles.emptyState}>
-            <h3>No encontramos becas con esos filtros</h3>
-            <p>Prueba con otra búsqueda o quita algún filtro.</p>
+            {items.length === 0 ? (
+              <>
+                <h3>Todavía no hay becas rankeadas</h3>
+                <p>{emptyMessage}</p>
+              </>
+            ) : (
+              <>
+                <h3>No encontramos becas con esos filtros</h3>
+                <p>Prueba con otra búsqueda o quita algún filtro.</p>
+              </>
+            )}
           </div>
         ) : (
           filtered.map((beca) => (
             <div className={styles.card} key={beca.id}>
               <div className={styles.cardTop}>
                 <span className={`${styles.tag} ${styles[beca.tagVariant] ?? ""}`}>
+                  {showRank && beca.rank !== undefined ? `#${beca.rank} · ` : ""}
                   {beca.label}
                 </span>
                 <span className={styles.estado}>{beca.estado}</span>
@@ -71,7 +83,7 @@ export default function BecasDashboard({ variant }: BecasDashboardProps) {
               <p className={styles.desc}>{beca.description}</p>
               <div className={styles.cardFooter}>
                 <span>{beca.deadline}</span>
-                {variant === "page" && <a href="#">Ver más →</a>}
+                <a href="#">Ver más →</a>
               </div>
             </div>
           ))
