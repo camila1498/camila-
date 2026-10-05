@@ -16,43 +16,59 @@ npm run dev
 
 Abre http://localhost:3000
 
+## Supabase
+
+Las becas viven en Supabase (tabla `becas`, solo lectura pública de las publicadas).
+Sin las variables de entorno, `/oportunidades` muestra un aviso en vez del listado.
+
+1. Crea el proyecto en [supabase.com](https://supabase.com) y copia **Project URL** y **anon key**
+   (Project Settings → API). Nunca uses la `service_role` key en este repo ni en Vercel.
+2. Copia `.env.local.example` a `.env.local` y complétalo. Pon las mismas dos variables en
+   Vercel (Production y Preview).
+3. Crea el esquema y los datos iniciales, con una de estas opciones:
+   - **CLI**: `npx supabase login`, `npx supabase link --project-ref <ref>`, `npx supabase db push`
+     y ejecuta `supabase/seed.sql` (SQL Editor o `npx supabase db push --include-seed`).
+   - **Sin CLI**: pega `supabase/migrations/*.sql` y luego `supabase/seed.sql` en el SQL Editor.
+4. Para dar acceso de administrador (lo usará el panel de becas), crea el usuario en
+   Authentication y ejecuta en el SQL Editor:
+   `insert into public.admins (user_id) select id from auth.users where email = 'correo@ejemplo.org';`
+
+## Estructura del sitio
+
+| Ruta | Contenido |
+|---|---|
+| `/` | Home: reseña, aliados, cifras, testimonios (carrusel), contacto |
+| `/programas`, `/programas/[slug]` | Emplealab, Createwomen, Eventos |
+| `/equipo` | Voluntarios por área (`/voluntarios` redirige aquí) |
+| `/oportunidades` | Becas: pestañas Database y Rankeadas, públicas (`/becas` redirige aquí) |
+| `/unete` | Beneficios, roles abiertos y formulario de voluntario |
+
 ## Arquitectura
 
 ```
 src/
-  app/
-    page.tsx                Home
-    programas/page.tsx       /programas
-    voluntarios/page.tsx      /voluntarios
-    becas/page.tsx            /becas (dashboard de becas)
-    layout.tsx, globals.css   Layout raíz, fuentes y tokens de diseño compartidos
-
+  app/                       Rutas (App Router), layout raíz y tokens de diseño (globals.css)
   components/
-    layout/                  Header y Footer (compartidos por todas las páginas)
-    ui/                       StarIcon, SectionHead
-    home/                     Secciones de la landing (Hero, About, Programs, ...)
-    programas/, voluntarios/  Componentes específicos de esas páginas
-    becas/                    Dashboard de becas + el gate de acceso + el modal de home
-
-  data/                      Contenido tipado (equipo, programas, iniciativas, becas, ...)
-  lib/constants.ts           Links externos (Google Forms, email de contacto, clave de becas)
+    layout/                  Header y Footer
+    ui/                      StarIcon, SectionHead
+    home/                    Secciones de la landing
+    programas/, voluntarios/  Componentes de esas páginas
+    becas/                   Listado de becas con buscador, filtros y pestañas
+  data/                      Contenido tipado (equipo, programas, testimonios) y tipos de becas
+  lib/supabase/              Cliente público de Supabase; lib/becas.ts lee las becas
+  lib/constants.ts           Links externos (Google Forms) y email de contacto
 ```
 
-### Dashboard de Becas
+### Ranking de oportunidades
 
-El dashboard de becas (`/becas`, y también accesible como modal desde home) está protegido
-por una clave simple recordada en `sessionStorage` (`src/components/becas/useBecasAccess.ts`).
-**No es autenticación real** — es el mismo mecanismo placeholder de la maqueta original, la
-clave viaja en texto plano en el bundle del cliente. Reemplazarlo por autenticación real
-(Supabase Auth) es parte del roadmap.
+La pestaña **Rankeadas** muestra las becas que tengan `rank` (1 = mejor), ordenadas; una beca
+sin `rank` solo aparece en **Database**. Hoy se edita en la tabla `becas` de Supabase; el panel
+admin lo hará desde la web. Los cambios se reflejan en `/oportunidades` en hasta 1 minuto.
 
-## Próximos pasos (fuera del alcance de esta migración)
+## Próximos pasos
 
-- **Supabase como CMS/dashboard de impacto**: hoy el equipo, los programas, las iniciativas y
-  las becas viven como arrays estáticos en `src/data/`. Son el punto de enganche natural para
-  reemplazar por datos de Supabase — el cambio sería acotado a cada archivo de `data/`, sin
-  tocar los componentes de UI.
-- **Autenticación real** para reemplazar el gate de clave de `/becas`.
-- **Formularios propios** para talleres, bootcamps y eventos (hoy todos apuntan a Google Forms
-  externos vía `src/lib/constants.ts`).
-- **Registro de usuarios y eventos** una vez exista la base de datos.
+- **Panel administrativo de becas** con autenticación real (crear, editar, publicar y rankear).
+- **Supabase para el resto del contenido** (equipo, programas, testimonios), hoy en `src/data/`.
+- **Formularios propios** para mentee (Emplealab, Createwomen) y voluntario, guardados en
+  Supabase (hoy apuntan a Google Forms vía `src/lib/constants.ts`).
+- **Panel administrativo** con autenticación real para ver, exportar y archivar respuestas.

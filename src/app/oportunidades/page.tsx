@@ -2,32 +2,37 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import BecasAccessGate from "@/components/becas/BecasAccessGate";
 import CoachBanner from "@/components/becas/CoachBanner";
-import BecasDashboard from "@/components/becas/BecasDashboard";
+import OportunidadesTabs from "@/components/becas/OportunidadesTabs";
+import { getBecas } from "@/lib/becas";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Dashboard de Becas — CreateLatam",
+  title: "Oportunidades — CreateLatam",
 };
 
-export default function BecasPage() {
+export const revalidate = 60;
+
+export default async function OportunidadesPage() {
+  const result = await getBecas();
+  const becas = result.ok ? result.becas : [];
+
   return (
-    <BecasAccessGate>
+    <>
       <Header />
       <section className="page-hero">
         <div className="wrap">
           <p className="breadcrumb">
-            <Link href="/">CreateLatam</Link> / Becas
+            <Link href="/">CreateLatam</Link> / Oportunidades
           </p>
-          <h1>Dashboard de Becas 🌟</h1>
+          <h1>Oportunidades 🌟</h1>
           <p>
             Todas las oportunidades que vamos encontrando para la comunidad — filtradas,
             organizadas y listas para postular.
           </p>
           <div className={styles.heroStats}>
             <div className={styles.stat}>
-              <div className={styles.num}>50+</div>
+              <div className={styles.num}>{result.ok ? becas.length : "—"}</div>
               <div className={styles.cap}>Oportunidades</div>
             </div>
             <div className={styles.stat}>
@@ -46,11 +51,19 @@ export default function BecasPage() {
 
       <section className={styles.becasSection}>
         <div className="wrap">
-          <BecasDashboard variant="page" />
+          {result.ok ? (
+            <OportunidadesTabs becas={becas} />
+          ) : (
+            <p className={styles.unavailable}>
+              {result.reason === "not-configured"
+                ? "Las oportunidades no están disponibles: falta configurar Supabase (NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY)."
+                : "No pudimos cargar las oportunidades en este momento. Inténtalo de nuevo en unos minutos."}
+            </p>
+          )}
         </div>
       </section>
 
       <Footer />
-    </BecasAccessGate>
+    </>
   );
 }

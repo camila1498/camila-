@@ -18,3 +18,8 @@
 .becasSection {
   padding: 8px 0 80px;
 }
+.unavailable {
+  text-align: center;
+  padding: 60px 0;
+  color: #8a7ba3;
+}
