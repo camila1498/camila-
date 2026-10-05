@@ -1,17 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { becas, becasRankeadas } from "@/data/becas";
+import { useMemo, useState } from "react";
+import { type Beca, getRankeadas } from "@/data/becas";
 import BecasDashboard from "./BecasDashboard";
 import styles from "./OportunidadesTabs.module.css";
 
-const tabs = [
-  { id: "database", label: "Database", count: becas.length },
-  { id: "rankeadas", label: "Rankeadas", count: becasRankeadas.length },
-] as const;
+type OportunidadesTabsProps = {
+  becas: Beca[];
+};
 
-export default function OportunidadesTabs() {
-  const [active, setActive] = useState<(typeof tabs)[number]["id"]>("database");
+export default function OportunidadesTabs({ becas }: OportunidadesTabsProps) {
+  const [active, setActive] = useState<"database" | "rankeadas">("database");
+  const rankeadas = useMemo(() => getRankeadas(becas), [becas]);
+  const tabs = [
+    { id: "database", label: "Database", count: becas.length },
+    { id: "rankeadas", label: "Rankeadas", count: rankeadas.length },
+  ] as const;
 
   return (
     <div>
@@ -37,7 +41,7 @@ export default function OportunidadesTabs() {
         ) : (
           <BecasDashboard
             key="rankeadas"
-            items={becasRankeadas}
+            items={rankeadas}
             showRank
             emptyMessage="El equipo aún está seleccionando las mejores oportunidades. Mientras tanto, explora la Database completa."
           />

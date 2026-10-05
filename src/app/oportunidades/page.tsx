@@ -4,14 +4,19 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CoachBanner from "@/components/becas/CoachBanner";
 import OportunidadesTabs from "@/components/becas/OportunidadesTabs";
-import { becas } from "@/data/becas";
+import { getBecas } from "@/lib/becas";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
   title: "Oportunidades — CreateLatam",
 };
 
-export default function BecasPage() {
+export const revalidate = 60;
+
+export default async function OportunidadesPage() {
+  const result = await getBecas();
+  const becas = result.ok ? result.becas : [];
+
   return (
     <>
       <Header />
@@ -27,7 +32,7 @@ export default function BecasPage() {
           </p>
           <div className={styles.heroStats}>
             <div className={styles.stat}>
-              <div className={styles.num}>{becas.length}</div>
+              <div className={styles.num}>{result.ok ? becas.length : "—"}</div>
               <div className={styles.cap}>Oportunidades</div>
             </div>
             <div className={styles.stat}>
@@ -46,7 +51,15 @@ export default function BecasPage() {
 
       <section className={styles.becasSection}>
         <div className="wrap">
-          <OportunidadesTabs />
+          {result.ok ? (
+            <OportunidadesTabs becas={becas} />
+          ) : (
+            <p className={styles.unavailable}>
+              {result.reason === "not-configured"
+                ? "Las oportunidades no están disponibles: falta configurar Supabase (NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY)."
+                : "No pudimos cargar las oportunidades en este momento. Inténtalo de nuevo en unos minutos."}
+            </p>
+          )}
         </div>
       </section>
 
