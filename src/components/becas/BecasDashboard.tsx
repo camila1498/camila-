@@ -83,7 +83,11 @@ export default function BecasDashboard({ items, emptyMessage, showRank }: BecasD
               <p className={styles.desc}>{beca.description}</p>
               <div className={styles.cardFooter}>
                 <span>{beca.deadline}</span>
-                <a href="#">Ver más →</a>
+                {beca.url && (
+                  <a href={beca.url} target="_blank" rel="noreferrer">
+                    Ver más →
+                  </a>
+                )}
               </div>
             </div>
           ))

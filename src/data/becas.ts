@@ -10,6 +10,8 @@ export type Beca = {
   description: string;
   deadline: string;
   tags: string[];
+  /** Enlace a la convocatoria; sin enlace la tarjeta no muestra "Ver más". */
+  url?: string;
   /** Posición en "Rankeadas" (1 = mejor). Sin rank = solo aparece en Database. */
   rank?: number;
 };

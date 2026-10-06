@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import StarIcon from "@/components/ui/StarIcon";
 
 const links = [
@@ -40,9 +41,12 @@ export default function Header() {
             </li>
           ))}
         </ul>
-        <Link href="/unete" className="nav-cta">
-          Estamos abiertos →
-        </Link>
+        <div className="nav-actions">
+          <GoogleSignInButton label="Ingresar" className="nav-login" />
+          <Link href="/unete" className="nav-cta">
+            Estamos abiertos →
+          </Link>
+        </div>
       </nav>
     </header>
   );

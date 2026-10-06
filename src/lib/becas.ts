@@ -12,6 +12,7 @@ type BecaRow = {
   deadline: string;
   tags: string[];
   rank: number | null;
+  url: string | null;
 };
 
 export type BecasResult =
@@ -24,7 +25,7 @@ export async function getBecas(): Promise<BecasResult> {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("becas")
-    .select("id,label,tag_variant,estado,title,institution,description,deadline,tags,rank")
+    .select("id,label,tag_variant,estado,title,institution,description,deadline,tags,rank,url")
     .eq("published", true)
     .order("created_at", { ascending: true })
     .overrideTypes<BecaRow[], { merge: false }>();
@@ -47,6 +48,7 @@ export async function getBecas(): Promise<BecasResult> {
       deadline: row.deadline,
       tags: row.tags,
       rank: row.rank ?? undefined,
+      url: row.url ?? undefined,
     })),
   };
 }

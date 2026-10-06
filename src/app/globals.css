@@ -169,6 +169,43 @@ nav ul a.active {
   background: var(--violeta-deep);
   transform: translateY(-1px);
 }
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(91, 27, 210, 0.3);
+  background: var(--white);
+  color: var(--violeta-deep);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s ease;
+}
+.nav-login:hover {
+  border-color: var(--violeta);
+}
+.nav-login:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+@media (min-width: 881px) and (max-width: 1140px) {
+  nav ul {
+    gap: 22px;
+  }
+  /* "Únete" ya está en el menú: evita que el menú choque con los botones. */
+  .nav-cta {
+    display: none;
+  }
+}
 @media (max-width: 880px) {
   nav ul {
     display: none;
@@ -176,6 +213,18 @@ nav ul a.active {
   .nav-cta {
     padding: 8px 14px;
     font-size: 0.82rem;
+  }
+  .nav-login {
+    padding: 7px 12px;
+    font-size: 0.82rem;
+  }
+  .nav-login svg {
+    display: none;
+  }
+}
+@media (max-width: 420px) {
+  .nav-cta {
+    display: none;
   }
 }
 
