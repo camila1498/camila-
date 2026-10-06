@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "@/app/admin/admin.module.css";
+import styles from "@/app/plataforma/admin.module.css";
 
 type ConfirmDeleteButtonProps = {
   action: () => void | Promise<void>;

@@ -6,11 +6,11 @@ import { z } from "zod";
 import { requireAdminOrThrow } from "@/lib/admin/auth";
 
 function done(message: string): never {
-  redirect(`/admin/miembros?ok=${encodeURIComponent(message)}`);
+  redirect(`/plataforma/miembros?ok=${encodeURIComponent(message)}`);
 }
 
 function fail(message: string): never {
-  redirect(`/admin/miembros?error=${encodeURIComponent(message)}`);
+  redirect(`/plataforma/miembros?error=${encodeURIComponent(message)}`);
 }
 
 const memberSchema = z.object({
@@ -40,7 +40,7 @@ export async function addMember(formData: FormData) {
   const { error } = await supabase.from("members").insert(parsed.data);
   if (error) fail(error.code === "23505" ? "Ese correo ya está registrado." : error.message);
 
-  revalidatePath("/admin/miembros");
+  revalidatePath("/plataforma/miembros");
   done("Miembro registrado. Ya puede ingresar con su cuenta de Google.");
 }
 
@@ -61,7 +61,7 @@ export async function setMemberActive(id: string, active: boolean) {
   const { error } = await supabase.from("members").update({ active }).eq("id", id);
   if (error) fail(error.message);
 
-  revalidatePath("/admin/miembros");
+  revalidatePath("/plataforma/miembros");
   done(active ? "Miembro reactivado" : "Acceso desactivado");
 }
 
@@ -74,6 +74,6 @@ export async function setMemberRole(id: string, formData: FormData) {
   const { error } = await supabase.from("members").update({ role: role.data }).eq("id", id);
   if (error) fail(error.message);
 
-  revalidatePath("/admin/miembros");
+  revalidatePath("/plataforma/miembros");
   done("Rol actualizado");
 }

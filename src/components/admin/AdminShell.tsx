@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import StarIcon from "@/components/ui/StarIcon";
 import type { NavSection } from "@/lib/admin/nav";
 import NavIcon from "./NavIcon";
-import styles from "@/app/admin/admin.module.css";
+import styles from "@/app/plataforma/admin.module.css";
 
 type AdminShellProps = {
   sections: NavSection[];
@@ -29,7 +29,7 @@ export default function AdminShell({
   useEffect(() => setOpen(false), [pathname]);
 
   const isActive = (href: string) =>
-    href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(`${href}/`);
+    href === "/plataforma" ? pathname === "/plataforma" : pathname === href || pathname.startsWith(`${href}/`);
 
   const initial = (user.name ?? user.email).charAt(0).toUpperCase();
 
@@ -56,7 +56,7 @@ export default function AdminShell({
         className={`${styles.sidebar} ${open ? styles.sidebarOpen : ""}`}
         aria-label="Navegación de la plataforma"
       >
-        <Link href="/admin" className={styles.sidebarBrand}>
+        <Link href="/plataforma" className={styles.sidebarBrand}>
           <StarIcon size={22} fill="#FFD938" />
           <span>CreateLatam</span>
         </Link>

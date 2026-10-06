@@ -15,22 +15,22 @@ export type NavSection = { title: string; items: NavItem[] };
 export const navSections: NavSection[] = [
   {
     title: "General",
-    items: [{ href: "/admin", label: "Dashboard", icon: "dashboard", roles: ["admin", "team", "student"] }],
+    items: [{ href: "/plataforma", label: "Dashboard", icon: "dashboard", roles: ["admin", "team", "student"] }],
   },
   {
     title: "Contenido",
-    items: [{ href: "/admin/becas", label: "Becas", icon: "becas", roles: ["admin"] }],
+    items: [{ href: "/plataforma/becas", label: "Becas", icon: "becas", roles: ["admin"] }],
   },
   {
     title: "Comunidad",
     items: [
-      { href: "/admin/bootcamps", label: "Inscritos en bootcamps", icon: "bootcamps", roles: ["admin"], soon: true },
-      { href: "/admin/visitantes", label: "Visitantes", icon: "visitors", roles: ["admin"], soon: true },
+      { href: "/plataforma/bootcamps", label: "Inscritos en bootcamps", icon: "bootcamps", roles: ["admin"], soon: true },
+      { href: "/plataforma/visitantes", label: "Visitantes", icon: "visitors", roles: ["admin"], soon: true },
     ],
   },
   {
     title: "Administración",
-    items: [{ href: "/admin/miembros", label: "Miembros", icon: "members", roles: ["admin"] }],
+    items: [{ href: "/plataforma/miembros", label: "Miembros", icon: "members", roles: ["admin"] }],
   },
 ];
 

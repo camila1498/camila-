@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
-/** Refresca la sesion y exige estar autenticado en /admin (salvo /admin/login). */
+/** Refresca la sesion y exige estar autenticado en /plataforma (salvo /plataforma/login). */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -25,9 +25,9 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  if (!user && pathname.startsWith("/admin") && pathname !== "/admin/login") {
+  if (!user && pathname.startsWith("/plataforma") && pathname !== "/plataforma/login") {
     const url = request.nextUrl.clone();
-    url.pathname = "/admin/login";
+    url.pathname = "/plataforma/login";
     url.search = "";
     return NextResponse.redirect(url);
   }

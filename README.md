@@ -32,12 +32,12 @@ Sin las variables de entorno, `/oportunidades` muestra un aviso en vez del lista
 4. Aplica también las migraciones `20261006000000_becas_rank.sql` (reordenar el ranking) y
    `20261007000000_members.sql` (miembros con rol; reemplaza a la tabla `admins`).
 
-## Plataforma (`/admin`)
+## Plataforma (`/plataforma`)
 
 Vista administrativa con sidebar: dashboard, becas (crear, editar, eliminar, ocultar/publicar,
 rankear) y miembros. Aquí irán también los inscritos en bootcamps, visitantes y demás.
 
-**Acceso**: se ingresa con Google desde el botón "Ingresar" de la landing (o `/admin/login`).
+**Acceso**: se ingresa con Google desde el botón "Ingresar" de la landing (o `/plataforma/login`).
 Solo entran los correos registrados en la tabla `members`; el resto se desconecta de inmediato.
 Cada miembro tiene un rol (`admin`, `team`, `student`); hoy solo `admin` ve contenido, y las
 vistas por rol se definen en `src/lib/admin/nav.ts`. Los datos los protege RLS, no la interfaz.
@@ -58,7 +58,7 @@ vistas por rol se definen en `src/lib/admin/nav.ts`. Los datos los protege RLS, 
 ### Primer administrador
 
 Antes de su primer ingreso, regístralo en el SQL Editor (los siguientes se agregan desde
-`/admin/miembros`):
+`/plataforma/miembros`):
 
 `insert into public.members (email, full_name, role) values ('correo@gmail.com', 'Nombre', 'admin');`
 
@@ -74,7 +74,7 @@ pero no obtiene ningún acceso: se desconecta y no puede leer ni escribir datos.
 | `/equipo` | Voluntarios por área (`/voluntarios` redirige aquí) |
 | `/oportunidades` | Becas: pestañas Database y Rankeadas, públicas (`/becas` redirige aquí) |
 | `/unete` | Beneficios, roles abiertos y formulario de voluntario |
-| `/admin` | Plataforma con sidebar (ingreso con Google, solo miembros registrados) |
+| `/plataforma` | Plataforma con sidebar (ingreso con Google, solo miembros registrados) |
 
 ## Arquitectura
 

@@ -18,7 +18,7 @@ export default async function NuevaBecaPage({
         <div>
           <h1>Nueva beca</h1>
           <p>
-            <Link href="/admin/becas">← Volver a becas</Link>
+            <Link href="/plataforma/becas">← Volver a becas</Link>
           </p>
         </div>
       </div>

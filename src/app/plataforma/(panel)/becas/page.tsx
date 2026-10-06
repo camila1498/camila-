@@ -40,7 +40,7 @@ export default async function AdminBecasPage({
             {becas.length} en total · {rankeadas} rankeadas · {ocultas} ocultas
           </p>
         </div>
-        <Link href="/admin/becas/nueva" className={styles.btn}>
+        <Link href="/plataforma/becas/nueva" className={styles.btn}>
           + Nueva beca
         </Link>
       </div>
@@ -100,7 +100,7 @@ export default async function AdminBecasPage({
                   </form>
                 </td>
                 <td>
-                  <Link href={`/admin/becas/${beca.id}`} className={styles.btnGhost}>
+                  <Link href={`/plataforma/becas/${beca.id}`} className={styles.btnGhost}>
                     Editar
                   </Link>
                 </td>

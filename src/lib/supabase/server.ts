@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-/** Cliente con la sesion del usuario (cookies). Solo para rutas dinamicas como /admin. */
+/** Cliente con la sesion del usuario (cookies). Solo para rutas dinamicas como /plataforma. */
 export async function createClient() {
   const cookieStore = await cookies();
 

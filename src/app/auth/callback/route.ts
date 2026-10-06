@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 function toLogin(origin: string, message: string) {
-  return NextResponse.redirect(`${origin}/admin/login?error=${encodeURIComponent(message)}`);
+  return NextResponse.redirect(`${origin}/plataforma/login?error=${encodeURIComponent(message)}`);
 }
 
 export async function GET(request: Request) {
@@ -25,5 +25,5 @@ export async function GET(request: Request) {
     );
   }
 
-  return NextResponse.redirect(`${origin}/admin`);
+  return NextResponse.redirect(`${origin}/plataforma`);
 }

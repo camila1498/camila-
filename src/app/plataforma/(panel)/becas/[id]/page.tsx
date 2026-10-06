@@ -34,7 +34,7 @@ export default async function EditarBecaPage({
         <div>
           <h1>Editar beca</h1>
           <p>
-            <Link href="/admin/becas">← Volver a becas</Link>
+            <Link href="/plataforma/becas">← Volver a becas</Link>
           </p>
         </div>
       </div>

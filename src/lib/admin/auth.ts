@@ -21,7 +21,7 @@ export async function requireMember() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/plataforma/login");
 
   const { data } = await supabase.rpc("member_role");
   const role = ROLES.find((r) => r === data) ?? null;
@@ -31,7 +31,7 @@ export async function requireMember() {
 /** Para paginas: si el rol no esta permitido, vuelve al dashboard en vez de mostrar un error. */
 export async function requireRole(...allowed: Role[]) {
   const session = await requireMember();
-  if (!session.role || !allowed.includes(session.role)) redirect("/admin");
+  if (!session.role || !allowed.includes(session.role)) redirect("/plataforma");
   return { ...session, role: session.role };
 }
 

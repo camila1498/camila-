@@ -66,13 +66,13 @@ export default async function DashboardPage() {
 
       <h2 className={styles.sectionTitle}>Accesos rápidos</h2>
       <div className={styles.quick}>
-        <Link href="/admin/becas/nueva" className={styles.btn}>
+        <Link href="/plataforma/becas/nueva" className={styles.btn}>
           + Nueva beca
         </Link>
-        <Link href="/admin/becas" className={styles.btnGhost}>
+        <Link href="/plataforma/becas" className={styles.btnGhost}>
           Administrar becas
         </Link>
-        <Link href="/admin/miembros" className={styles.btnGhost}>
+        <Link href="/plataforma/miembros" className={styles.btnGhost}>
           Miembros
         </Link>
       </div>

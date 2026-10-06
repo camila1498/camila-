@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { becaFilters } from "@/data/becas";
-import styles from "@/app/admin/admin.module.css";
+import styles from "@/app/plataforma/admin.module.css";
 
 export type BecaFormValues = {
   slug: string;
@@ -148,7 +148,7 @@ export default function BecaForm({ action, values = empty, lockSlug, children }:
         <button type="submit" className={styles.btn}>
           Guardar
         </button>
-        <Link href="/admin/becas" className={styles.btnGhost}>
+        <Link href="/plataforma/becas" className={styles.btnGhost}>
           Cancelar
         </Link>
         <span className={styles.spacer} />

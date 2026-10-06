@@ -6,7 +6,7 @@ import { requireAdminOrThrow } from "@/lib/admin/auth";
 import { parseBecaForm } from "@/lib/admin/becas-schema";
 
 function done(message: string): never {
-  redirect(`/admin/becas?ok=${encodeURIComponent(message)}`);
+  redirect(`/plataforma/becas?ok=${encodeURIComponent(message)}`);
 }
 
 function fail(path: string, message: string): never {
@@ -20,18 +20,18 @@ function dbMessage(error: { code?: string; message: string }) {
 
 function refreshPublic() {
   revalidatePath("/oportunidades");
-  revalidatePath("/admin/becas");
+  revalidatePath("/plataforma/becas");
 }
 
 export async function createBeca(formData: FormData) {
   const { supabase } = await requireAdminOrThrow();
   const parsed = parseBecaForm(formData);
   if (!parsed.success || !parsed.data.slug) {
-    fail("/admin/becas/nueva", parsed.success ? "Falta el título" : parsed.error.issues[0]!.message);
+    fail("/plataforma/becas/nueva", parsed.success ? "Falta el título" : parsed.error.issues[0]!.message);
   }
 
   const { error } = await supabase.from("becas").insert(parsed.data);
-  if (error) fail("/admin/becas/nueva", dbMessage(error));
+  if (error) fail("/plataforma/becas/nueva", dbMessage(error));
 
   refreshPublic();
   done("Beca creada");
@@ -40,10 +40,10 @@ export async function createBeca(formData: FormData) {
 export async function updateBeca(id: string, formData: FormData) {
   const { supabase } = await requireAdminOrThrow();
   const parsed = parseBecaForm(formData);
-  if (!parsed.success) fail(`/admin/becas/${id}`, parsed.error.issues[0]!.message);
+  if (!parsed.success) fail(`/plataforma/becas/${id}`, parsed.error.issues[0]!.message);
 
   const { error } = await supabase.from("becas").update(parsed.data).eq("id", id);
-  if (error) fail(`/admin/becas/${id}`, dbMessage(error));
+  if (error) fail(`/plataforma/becas/${id}`, dbMessage(error));
 
   refreshPublic();
   done("Cambios guardados");
@@ -52,7 +52,7 @@ export async function updateBeca(id: string, formData: FormData) {
 export async function deleteBeca(id: string) {
   const { supabase } = await requireAdminOrThrow();
   const { error } = await supabase.from("becas").delete().eq("id", id);
-  if (error) fail("/admin/becas", dbMessage(error));
+  if (error) fail("/plataforma/becas", dbMessage(error));
 
   refreshPublic();
   done("Beca eliminada");
@@ -61,7 +61,7 @@ export async function deleteBeca(id: string) {
 export async function setPublished(id: string, published: boolean) {
   const { supabase } = await requireAdminOrThrow();
   const { error } = await supabase.from("becas").update({ published }).eq("id", id);
-  if (error) fail("/admin/becas", dbMessage(error));
+  if (error) fail("/plataforma/becas", dbMessage(error));
 
   refreshPublic();
   done(published ? "Beca publicada" : "Beca oculta");
@@ -72,11 +72,11 @@ export async function setRank(id: string, formData: FormData) {
   const raw = String(formData.get("rank") ?? "").trim();
   const rank = raw === "" ? null : Number(raw);
   if (rank !== null && (!Number.isInteger(rank) || rank < 1)) {
-    fail("/admin/becas", "El ranking debe ser un número entero mayor que 0.");
+    fail("/plataforma/becas", "El ranking debe ser un número entero mayor que 0.");
   }
 
   const { error } = await supabase.rpc("set_beca_rank", { p_id: id, p_rank: rank });
-  if (error) fail("/admin/becas", dbMessage(error));
+  if (error) fail("/plataforma/becas", dbMessage(error));
 
   refreshPublic();
   done("Ranking actualizado");
