@@ -34,7 +34,8 @@ Sin las variables de entorno, `/oportunidades` muestra un aviso en vez del lista
    `20261009000000_forms.sql` (formularios propios y sus respuestas) y
    `20261010000000_campaigns.sql` (campañas, versiones editables y configuración legal) y
    `20261011000000_create_form.sql` (crear y eliminar formularios nuevos) y
-   `20261012000000_reviews.sql` (historial de postulaciones y plantillas de mensajes).
+   `20261012000000_reviews.sql` (historial de postulaciones y plantillas de mensajes) y
+   `20261013000000_campaign_stats.sql` (cierre de campaña, cifras públicas y registro de descargas).
 
 ## Plataforma (`/plataforma`)
 
@@ -133,6 +134,31 @@ Si el número no trae código de país, se le agrega el del país indicado y se 
 `{{nombre}}`, `{{nombre_completo}}`, `{{formulario}}` y `{{campana}}` (una lista cerrada; cualquier otra se rechaza
 al guardar).
 
+## Cierre, cifras y exportación
+
+Desde una campaña, **«Cierre y exportación»** (`/plataforma/campanas/<id>/cierre`):
+
+1. **Cerrar** (con confirmación): corta la recolección y calcula una **instantánea de cifras** — solo conteos:
+   recibidas, por estado, menores y un desglose por cada pregunta de opciones (nunca texto libre ni datos
+   sensibles). Se puede **recalcular** si se sigue revisando después de cerrar.
+2. **Elegir qué mostrar en la web**: totales («500 postulaciones para 50 cupos», postulaciones por cupo, aceptadas,
+   países) y desgloses en porcentaje. Guardar arma una **vista previa**; no se publica hasta el paso 3.
+3. **Publicar / retirar**: lo publicado aparece en el inicio (sección *Convocatorias*, que no existe mientras no haya
+   nada publicado) y se actualiza al instante. Ver `CampaignFigures`, reutilizable en otras páginas
+   (`loadPublicStats(formSlug)`).
+
+**Privacidad por diseño** (se aplica en la base, no en la pantalla): grupos de menos de 5 personas se juntan en
+«Otros» o se omiten; con menos de 20 postulaciones solo se publican totales; solo preguntas de opciones y no
+sensibles; el público solo puede leer el resultado ya filtrado (`get_public_stats`), nunca la instantánea.
+
+**Exportar** (CSV con `;` y UTF-8, se abre bien en Excel), siempre con las columnas de la versión de esa campaña y
+cada pregunta rotulada `Pregunta (id)`: el id es estable, así se pueden unir archivos de campañas distintas.
+- **Completo**: nombre, correo, teléfonos, tutor y datos sensibles; también conserva datos de preguntas que ya no
+  existen. Solo administradores y **cada descarga queda registrada** (`export_log`); si no se puede registrar, no se entrega.
+- **Anonimizado**: sin nombre, correo, notas, texto libre, teléfonos ni sensibles; número correlativo en vez de
+  identificador y solo el mes de recepción. Los datos sensibles ni siquiera se leen de la base en este modo.
+- Los textos que empiezan con `=`, `+`, `-` o `@` se neutralizan para que Excel no los ejecute como fórmula.
+
 ## Estructura del sitio
 
 | Ruta | Contenido |
@@ -172,6 +198,7 @@ admin; si la posición ya la tiene otra beca, las dos intercambian.
 ## Próximos pasos
 
 - **Supabase para el resto del contenido** (equipo, programas, testimonios), hoy en `src/data/`.
-- **Cierre de campaña y datos para la web**: cifras agregadas (p. ej. 500 postulaciones para 50 cupos), exportación y
-  archivado de las antiguas; **puntaje del Bootcamp** (reglas del PDF §6).
+- **Archivado y vencimientos**: plazos de conservación del PDF (eliminar/anonimizar datos vencidos tras exportar),
+  y exportación a Excel (`.xlsx`).
+- **Puntaje del Bootcamp** (reglas del PDF §6).
 - **Consentimiento del tutor** para menores y contador de cupos del Bootcamp.

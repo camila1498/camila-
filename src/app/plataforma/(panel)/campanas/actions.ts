@@ -89,3 +89,84 @@ export async function saveTemplate(key: string, formData: FormData) {
   revalidatePath("/plataforma/mensajes");
   redirect(back({ ok: "Mensaje guardado." }));
 }
+
+// ---------------------------------------------------------------- Cierre y cifras
+
+const closingUrl = (campaignId: string, params: Record<string, string> = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return `/plataforma/campanas/${campaignId}/cierre${query ? `?${query}` : ""}`;
+};
+
+function refreshStatsPages(campaignId: string) {
+  revalidatePath(`/plataforma/campanas/${campaignId}`);
+  revalidatePath(`/plataforma/campanas/${campaignId}/cierre`);
+  revalidatePath("/plataforma/campanas");
+  revalidatePath("/plataforma/formularios");
+  // Lo publicado se ve en la web: se actualiza al instante en vez de esperar el caché.
+  revalidatePath("/");
+}
+
+/** Corta la recolección y deja calculada la instantánea de cifras. */
+export async function closeCampaignAndCount(campaignId: string) {
+  const { supabase } = await requireAdminOrThrow();
+  if (!UUID.test(campaignId)) redirect("/plataforma/campanas");
+
+  const { error } = await supabase.rpc("close_campaign", { p_id: campaignId });
+  if (error) redirect(closingUrl(campaignId, { error: error.message === "not_open" ? "Esa campaña ya estaba cerrada." : `No se pudo cerrar: ${error.message}` }));
+
+  refreshStatsPages(campaignId);
+  redirect(closingUrl(campaignId, { ok: "Campaña cerrada: ya no recibe postulaciones. Estas son sus cifras." }));
+}
+
+/** Vuelve a calcular las cifras (p. ej. tras seguir revisando postulaciones). No cambia lo publicado. */
+export async function refreshStats(campaignId: string) {
+  const { supabase } = await requireAdminOrThrow();
+  if (!UUID.test(campaignId)) redirect("/plataforma/campanas");
+
+  const { error } = await supabase.rpc("refresh_campaign_stats", { p_id: campaignId });
+  if (error) redirect(closingUrl(campaignId, { error: `No se pudieron recalcular: ${error.message}` }));
+
+  refreshStatsPages(campaignId);
+  redirect(closingUrl(campaignId, { ok: "Cifras recalculadas. Si ya habías armado la vista pública, vuelve a guardarla para que las use." }));
+}
+
+const STATS_ERRORS: Record<string, string> = {
+  not_closed: "Primero hay que cerrar la campaña.",
+  invalid_metric: "Hay una cifra que no se puede publicar.",
+  invalid_field: "Ese desglose no se puede publicar (solo preguntas de opciones y no sensibles).",
+  no_capacity: "Esta campaña no tiene cupos definidos.",
+  no_countries: "Esta campaña no tiene la pregunta de país (C4).",
+  too_few: "Con menos de 20 postulaciones solo se publican los totales, no los desgloses (se podría identificar a alguien).",
+  not_found: "La campaña ya no existe.",
+};
+
+/** Guarda qué cifras se mostrarán. No publica: deja la vista previa para revisarla. */
+export async function saveStatsSelection(campaignId: string, formData: FormData) {
+  const { supabase } = await requireAdminOrThrow();
+  if (!UUID.test(campaignId)) redirect("/plataforma/campanas");
+
+  const metrics = formData.getAll("metric").map(String);
+  const fields = formData.getAll("field").map(String);
+  if (metrics.length === 0 && fields.length === 0) {
+    redirect(closingUrl(campaignId, { error: "Marca al menos una cifra para mostrar." }));
+  }
+
+  const { error } = await supabase.rpc("set_public_stats", { p_id: campaignId, p_metrics: metrics, p_field_ids: fields });
+  if (error) redirect(closingUrl(campaignId, { error: STATS_ERRORS[error.message] ?? `No se pudo guardar: ${error.message}` }));
+
+  refreshStatsPages(campaignId);
+  redirect(closingUrl(campaignId, { ok: "Vista previa guardada. Revísala abajo; todavía no es pública." }));
+}
+
+export async function publishStats(campaignId: string, publish: boolean) {
+  const { supabase } = await requireAdminOrThrow();
+  if (!UUID.test(campaignId)) redirect("/plataforma/campanas");
+
+  const { error } = await supabase.rpc("publish_public_stats", { p_id: campaignId, p_publish: publish });
+  if (error) {
+    redirect(closingUrl(campaignId, { error: error.message === "nothing_to_publish" ? "Primero guarda qué cifras mostrar." : `No se pudo actualizar: ${error.message}` }));
+  }
+
+  refreshStatsPages(campaignId);
+  redirect(closingUrl(campaignId, { ok: publish ? "Cifras publicadas en la web." : "Cifras retiradas de la web." }));
+}
