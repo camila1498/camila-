@@ -1,5 +1,6 @@
+import Link from "next/link";
 import SectionHead from "@/components/ui/SectionHead";
-import { CONTACT_EMAIL, VOLUNTEER_FORM_URL } from "@/lib/constants";
+import { CONTACT_EMAIL } from "@/lib/constants";
 import styles from "./Allies.module.css";
 
 const allies = ["Equipu PUCP", "Mar de Becas", "Lead UTP", "Personal Branding"];
@@ -24,9 +25,7 @@ export default function Allies() {
         <p className={styles.note}>
           ¿Tu organización, escuela o institución quiere aliarse con CreateLatam? Escríbenos a{" "}
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> o{" "}
-          <a href={VOLUNTEER_FORM_URL} target="_blank" rel="noreferrer">
-            completa el formulario →
-          </a>
+          <Link href="/unete/aliados">completa el formulario →</Link>
         </p>
       </div>
     </section>

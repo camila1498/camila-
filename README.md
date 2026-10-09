@@ -30,7 +30,8 @@ Sin las variables de entorno, `/oportunidades` muestra un aviso en vez del lista
      y ejecuta `supabase/seed.sql` (SQL Editor o `npx supabase db push --include-seed`).
    - **Sin CLI**: pega `supabase/migrations/*.sql` y luego `supabase/seed.sql` en el SQL Editor.
 4. Aplica también las migraciones `20261006000000_becas_rank.sql` (reordenar el ranking) y
-   `20261007000000_members.sql` (miembros con rol; reemplaza a la tabla `admins`).
+   `20261007000000_members.sql` (miembros con rol; reemplaza a la tabla `admins`) y
+   `20261009000000_forms.sql` (formularios propios y sus respuestas).
 
 ## Plataforma (`/plataforma`)
 
@@ -65,6 +66,33 @@ Antes de su primer ingreso, regístralo en el SQL Editor (los siguientes se agre
 Quien aún no esté registrado puede crear una cuenta de Google en Supabase al intentar entrar,
 pero no obtiene ningún acceso: se desconecta y no puede leer ni escribir datos.
 
+## Formularios
+
+Cinco formularios propios (voluntariado, aliados, mentee de EmpleaLab, mentee de CreateWomen y
+postulación al Bootcamp 2026) reemplazan a los Google Forms. Vienen del documento *Formularios
+CreateLatam 2026* y se definen en código en `src/lib/forms/definitions/` (preguntas, condicionales
+y plazos de conservación); el mismo archivo genera el formulario y su validación. Al cambiar
+preguntas, sube `version` de esa definición.
+
+| Ruta | Formulario |
+|---|---|
+| `/unete/voluntariado`, `/unete/aliados` | Voluntariado y Aliados (los dos CTAs de Únete) |
+| `/programas/emplealab/postular`, `/programas/createwomen/postular` | Mentees |
+| `/bootcamp/postular` | Postulación al Bootcamp 2026 |
+
+**Nacen cerrados.** Cada formulario tiene un estado en la tabla `forms` (`draft`, `open`, `closed`,
+con fechas opcionales). Mientras no se abra, la página muestra "abrirá pronto" (y, si existía, el
+Google Form anterior como respaldo). Además, aunque esté `open`, **no recibe envíos mientras falten
+datos legales o del programa**: RUC, domicilio y correo de privacidad en `src/lib/legal.ts`, y el
+horario del Bootcamp en `src/lib/forms/config.ts` (ahí también están el rango de edad y las fechas).
+El aviso de privacidad es un borrador pendiente de aprobación de Legal.
+
+Para abrir uno (cuando Legal apruebe y los datos estén completos):
+`update public.forms set status = 'open' where slug = 'voluntariado';`
+
+Las respuestas las guarda la función `submit_form` (valida que esté abierto y rechaza duplicados);
+solo los admins pueden leerlas. Lo que pueda traer datos de salud (B13) va en una tabla aparte.
+
 ## Estructura del sitio
 
 | Ruta | Contenido |
@@ -73,7 +101,7 @@ pero no obtiene ningún acceso: se desconecta y no puede leer ni escribir datos.
 | `/programas`, `/programas/[slug]` | Emplealab, Createwomen, Eventos |
 | `/equipo` | Voluntarios por área (`/voluntarios` redirige aquí) |
 | `/oportunidades` | Becas: pestañas Database y Rankeadas, públicas (`/becas` redirige aquí) |
-| `/unete` | Beneficios, roles abiertos y formulario de voluntario |
+| `/unete` | Beneficios, roles abiertos y los CTAs de voluntariado y aliados |
 | `/plataforma` | Plataforma con sidebar (ingreso con Google, solo miembros registrados) |
 
 ## Arquitectura
@@ -104,6 +132,6 @@ admin; si la posición ya la tiene otra beca, las dos intercambian.
 ## Próximos pasos
 
 - **Supabase para el resto del contenido** (equipo, programas, testimonios), hoy en `src/data/`.
-- **Formularios propios** para mentee (Emplealab, Createwomen) y voluntario, guardados en
-  Supabase (hoy apuntan a Google Forms vía `src/lib/constants.ts`).
-- **Respuestas de formularios en el panel**: verlas, exportarlas y archivar las antiguas.
+- **Respuestas de formularios en la plataforma**: verlas, puntuarlas (Bootcamp), exportarlas y
+  archivar las antiguas.
+- **Consentimiento del tutor** para menores y contador de cupos del Bootcamp.

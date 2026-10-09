@@ -1,5 +1,3 @@
-import { BOOTCAMP_WAITLIST_URL } from "@/lib/constants";
-
 export type Program = {
   slug: string;
   title: string;
@@ -7,8 +5,8 @@ export type Program = {
   summary: string;
   description: string;
   highlights: string[];
-  /** Formulario de postulación; si no existe todavía se muestra "próximamente". */
-  applyUrl?: string;
+  /** Postulación propia del programa (ruta interna) y el texto del botón. */
+  applyHref?: string;
   applyLabel?: string;
 };
 
@@ -26,7 +24,8 @@ export const programs: Program[] = [
       "Orientación para el siguiente paso profesional y de empleabilidad.",
       "Workshops nuevos cada año.",
     ],
-    applyLabel: "Formulario del mentee",
+    applyHref: "/programas/emplealab/postular",
+    applyLabel: "Postular como mentee",
   },
   {
     slug: "createwomen",
@@ -41,8 +40,8 @@ export const programs: Program[] = [
       "Proyectos reales y feedback de mentores.",
       "90% de tasa de finalización en nuestros programas.",
     ],
-    applyUrl: BOOTCAMP_WAITLIST_URL,
-    applyLabel: "Formulario del mentee",
+    applyHref: "/programas/createwomen/postular",
+    applyLabel: "Postular como mentee",
   },
   {
     slug: "eventos",

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 type GoogleSignInButtonProps = {
   label?: string;
@@ -41,6 +40,8 @@ export default function GoogleSignInButton({
 
   async function signIn() {
     setLoading(true);
+    // Se carga al hacer clic para no sumar el cliente de Supabase al peso de cada pagina.
+    const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",

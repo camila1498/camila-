@@ -42,20 +42,11 @@ export default async function ProgramaPage({ params }: Props) {
         <div className={`wrap ${styles.detailInner}`}>
           <div>
             <p className={styles.desc}>{program.description}</p>
-            {program.applyLabel &&
-              (program.applyUrl ? (
-                <a
-                  href={program.applyUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-primary"
-                  style={{ marginTop: 28 }}
-                >
-                  {program.applyLabel} →
-                </a>
-              ) : (
-                <span className={styles.soon}>{program.applyLabel}: próximamente</span>
-              ))}
+            {program.applyHref && program.applyLabel && (
+              <Link href={program.applyHref} className="btn-primary" style={{ marginTop: 28 }}>
+                {program.applyLabel} →
+              </Link>
+            )}
             <div>
               <Link href="/programas" className={`link-underline ${styles.back}`}>
                 ← Ver todos los programas

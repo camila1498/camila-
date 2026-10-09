@@ -1,5 +1,5 @@
+import Link from "next/link";
 import SectionHead from "@/components/ui/SectionHead";
-import { VOLUNTEER_FORM_URL } from "@/lib/constants";
 import styles from "./RolesAbiertos.module.css";
 
 const liderazgo = [
@@ -51,9 +51,9 @@ export default function RolesAbiertos() {
           </div>
         </div>
         <p className={styles.cta}>
-          <a href={VOLUNTEER_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary">
+          <Link href="/unete/voluntariado" className="btn-primary">
             Postula ahora →
-          </a>
+          </Link>
         </p>
       </div>
     </section>
