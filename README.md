@@ -35,7 +35,8 @@ Sin las variables de entorno, `/oportunidades` muestra un aviso en vez del lista
    `20261010000000_campaigns.sql` (campañas, versiones editables y configuración legal) y
    `20261011000000_create_form.sql` (crear y eliminar formularios nuevos) y
    `20261012000000_reviews.sql` (historial de postulaciones y plantillas de mensajes) y
-   `20261013000000_campaign_stats.sql` (cierre de campaña, cifras públicas y registro de descargas).
+   `20261013000000_campaign_stats.sql` (cierre de campaña, cifras públicas y registro de descargas) y
+   `20261014000000_retention.sql` (archivado y vencimiento de datos personales).
 
 ## Plataforma (`/plataforma`)
 
@@ -159,6 +160,29 @@ cada pregunta rotulada `Pregunta (id)`: el id es estable, así se pueden unir ar
   identificador y solo el mes de recepción. Los datos sensibles ni siquiera se leen de la base en este modo.
 - Los textos que empiezan con `=`, `+`, `-` o `@` se neutralizan para que Excel no los ejecute como fórmula.
 
+## Archivado y vencimientos
+
+Al terminar el proceso, en **«Cierre y exportación» → Archivar** se indica cuándo terminó el programa. Requiere haber
+descargado antes la **exportación completa**. Una campaña archivada ya no admite cambios de estado y sus cifras quedan fijas.
+
+**Vencimientos** (`/plataforma/vencimientos`) muestra, por campaña, cuántas personas hay en cada grupo y cuándo vence su plazo:
+
+| Grupo | Plazo por defecto | Cuenta desde | Al vencer |
+|---|---|---|---|
+| No seleccionadas (incluye sin revisar, descartadas, retiradas) | 6 meses | cierre de la campaña | se **eliminan** |
+| Lista de espera | 12 meses | cierre de la campaña | se **eliminan** |
+| Participantes (aprobadas y confirmadas) | 24 meses (12 en voluntariado) | fin del programa (al archivar) | se **anonimizan** |
+
+Los plazos se editan por formulario en esa misma pantalla y **deben coincidir con el aviso de privacidad** («Cuánto
+tiempo»); las condiciones no listadas en el aviso (p. ej. el plazo de no seleccionados en voluntariado) son un
+supuesto conservador a confirmar con Legal. El botón «Eliminar o anonimizar vencidas» solo aparece si hay algo vencido y
+ya existe la exportación completa; la base lo vuelve a exigir.
+
+**Anonimizar** deja `Anónimo` y un correo sin significado, y conserva solo respuestas de opciones, números y sí/no no
+sensibles (sirven para estadísticas); borra texto libre, contacto, tutor, datos sensibles, notas y los avisos de WhatsApp
+del historial. **Eliminar** borra la postulación con su historial y datos sensibles. Antes de borrar se fija la
+instantánea de cifras (no se recalcula después) y cada purga queda en un registro sin datos personales.
+
 ## Estructura del sitio
 
 | Ruta | Contenido |
@@ -198,7 +222,6 @@ admin; si la posición ya la tiene otra beca, las dos intercambian.
 ## Próximos pasos
 
 - **Supabase para el resto del contenido** (equipo, programas, testimonios), hoy en `src/data/`.
-- **Archivado y vencimientos**: plazos de conservación del PDF (eliminar/anonimizar datos vencidos tras exportar),
-  y exportación a Excel (`.xlsx`).
+- **Exportación a Excel** (`.xlsx`), además del CSV.
 - **Puntaje del Bootcamp** (reglas del PDF §6).
 - **Consentimiento del tutor** para menores y contador de cupos del Bootcamp.

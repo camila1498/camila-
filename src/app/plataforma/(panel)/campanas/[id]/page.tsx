@@ -77,7 +77,7 @@ export default async function CampanaPage({
           <h1>{campaign.name}</h1>
           <p>
             <Link href="/plataforma/campanas">← Todas las campañas</Link> · {campaign.form_title} · versión {campaign.version} ·{" "}
-            {campaign.status === "open" ? "recibiendo postulaciones" : `cerrada ${formatLima(campaign.closed_at)}`}
+            {campaign.status === "open" ? "recibiendo postulaciones" : `${campaign.status === "archived" ? "archivada · " : ""}cerrada ${formatLima(campaign.closed_at)}`}
           </p>
         </div>
         <Link href={`/plataforma/campanas/${id}/cierre`} className={campaign.status === "open" ? styles.btnGhost : styles.btn}>

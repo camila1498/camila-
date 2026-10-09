@@ -47,6 +47,12 @@ const paths: Record<NavItem["icon"], React.ReactNode> = {
       <path d="M9 10h6M9 14h4" />
     </>
   ),
+  archive: (
+    <>
+      <rect x="3" y="4" width="18" height="4.5" rx="1" />
+      <path d="M5 8.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8.5M10 13h4" />
+    </>
+  ),
   settings: (
     <>
       <circle cx="12" cy="12" r="3" />

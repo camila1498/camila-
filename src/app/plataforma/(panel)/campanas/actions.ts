@@ -26,7 +26,15 @@ export async function reviewSubmission(campaignId: string, submissionId: string,
 
   const note = String(formData.get("note") ?? "").trim().slice(0, 500);
   const { error } = await supabase.rpc("set_submission_status", { p_id: submissionId, p_status: status, p_note: note || null });
-  if (error) fail(error.message === "not_found" ? "La postulación ya no existe." : `No se pudo cambiar el estado: ${error.message}`);
+  if (error) {
+    fail(
+      error.message === "not_found"
+        ? "La postulación ya no existe."
+        : error.message === "archived"
+          ? "La campaña está archivada: ya no se cambian estados."
+          : `No se pudo cambiar el estado: ${error.message}`,
+    );
+  }
 
   revalidatePath(`/plataforma/campanas/${campaignId}`);
   revalidatePath("/plataforma/campanas");
@@ -124,7 +132,13 @@ export async function refreshStats(campaignId: string) {
   if (!UUID.test(campaignId)) redirect("/plataforma/campanas");
 
   const { error } = await supabase.rpc("refresh_campaign_stats", { p_id: campaignId });
-  if (error) redirect(closingUrl(campaignId, { error: `No se pudieron recalcular: ${error.message}` }));
+  if (error) {
+    redirect(
+      closingUrl(campaignId, {
+        error: error.message === "purged" ? "Ya se eliminaron datos de esta campaña: las cifras quedan como estaban." : `No se pudieron recalcular: ${error.message}`,
+      }),
+    );
+  }
 
   refreshStatsPages(campaignId);
   redirect(closingUrl(campaignId, { ok: "Cifras recalculadas. Si ya habías armado la vista pública, vuelve a guardarla para que las use." }));
@@ -169,4 +183,27 @@ export async function publishStats(campaignId: string, publish: boolean) {
 
   refreshStatsPages(campaignId);
   redirect(closingUrl(campaignId, { ok: publish ? "Cifras publicadas en la web." : "Cifras retiradas de la web." }));
+}
+
+const ARCHIVE_ERRORS: Record<string, string> = {
+  export_required: "Antes de archivar descarga la exportación completa: después se eliminarán datos con el tiempo.",
+  not_closed: "Primero hay que cerrar la campaña.",
+  invalid_date: "La fecha de fin del programa no es válida (no puede ser futura).",
+  not_found: "La campaña ya no existe.",
+};
+
+/** Marca la campaña como archivada y registra cuándo terminó el programa (desde ahí corre el plazo de los participantes). */
+export async function archiveCampaign(campaignId: string, formData: FormData) {
+  const { supabase } = await requireAdminOrThrow();
+  if (!UUID.test(campaignId)) redirect("/plataforma/campanas");
+
+  const date = String(formData.get("program_end") ?? "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) redirect(closingUrl(campaignId, { error: "Indica cuándo terminó el programa." }));
+
+  const { error } = await supabase.rpc("archive_campaign", { p_id: campaignId, p_program_ended_on: date });
+  if (error) redirect(closingUrl(campaignId, { error: ARCHIVE_ERRORS[error.message] ?? `No se pudo archivar: ${error.message}` }));
+
+  refreshStatsPages(campaignId);
+  revalidatePath("/plataforma/vencimientos");
+  redirect(closingUrl(campaignId, { ok: "Campaña archivada. Los plazos de conservación ya corren: míralos en Vencimientos." }));
 }
