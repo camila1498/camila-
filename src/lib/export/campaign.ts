@@ -14,12 +14,22 @@ export type ExportRow = {
   created_at: string;
   answers: Answers;
   sensitive: Answers;
+  /** Solo en el modo completo: respuesta del tutor (menores). */
+  consent?: { guardian_name: string | null; relationship: string | null; data_consent: boolean | null; image_consent: boolean | null; responded_at: string | null; revoked_at: string | null } | null;
 };
 
 /** Tipos que pueden identificar a alguien (texto libre, contacto): fuera del modo anonimizado. */
 const IDENTIFYING = new Set(["text", "textarea", "email", "tel", "url"]);
 
 const yesNo = (v: boolean) => (v ? "Sí" : "No");
+
+function consentLabel(r: ExportRow): string {
+  if (!r.is_minor) return "No aplica";
+  const c = r.consent;
+  if (!c || !c.responded_at) return "Pendiente";
+  if (c.revoked_at) return "Revocado";
+  return c.data_consent ? "Autorizó" : "No autorizó";
+}
 
 function limaParts(iso: string) {
   const d = new Date(Date.parse(iso) - 5 * 60 * 60 * 1000); // Lima es UTC-5 todo el año
@@ -57,7 +67,7 @@ export function buildExport(def: FormDefinition, rows: ExportRow[], mode: Export
 
   const header =
     mode === "completo"
-      ? ["Recibida (Lima)", "Estado", "Menor de edad", "Acepta comunicaciones", "Nombre", "Correo", "Notas internas"]
+      ? ["Recibida (Lima)", "Estado", "Menor de edad", "Acepta comunicaciones", "Nombre", "Correo", "Notas internas", "Consentimiento del tutor", "Tutor que respondió", "Uso de imagen autorizado"]
       : ["N°", "Mes de recepción", "Estado", "Menor de edad", "Acepta comunicaciones"];
   header.push(...fields.map((f) => `${f.label} (${f.id})`), ...extra.map((id) => `Dato antiguo (${id})`));
 
@@ -73,6 +83,9 @@ export function buildExport(def: FormDefinition, rows: ExportRow[], mode: Export
             r.full_name,
             r.email,
             r.notes ?? "",
+            consentLabel(r),
+            r.consent?.guardian_name ? `${r.consent.guardian_name}${r.consent.relationship ? ` (${r.consent.relationship})` : ""}` : "",
+            r.consent?.data_consent ? yesNo(Boolean(r.consent.image_consent) && !r.consent.revoked_at) : "",
           ]
         : [String(i + 1), iso.slice(0, 7), STATUS_LABELS[r.status] ?? r.status, yesNo(r.is_minor), yesNo(r.consent_marketing)];
     const values = fields.map((f) => cell(f, f.id in r.sensitive ? r.sensitive[f.id] : r.answers[f.id]));

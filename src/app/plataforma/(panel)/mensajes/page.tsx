@@ -9,9 +9,10 @@ const SAMPLE = {
   nombre_completo: "Ana Pérez",
   formulario: "Postulación al Bootcamp 2026",
   campana: "Bootcamp 2026",
+  enlace_consentimiento: "https://createlatam.tech/consentimiento/…",
 };
 
-const ORDER = ["approved", "waitlist", "rejected"];
+const ORDER = ["approved", "waitlist", "rejected", "guardian_consent"];
 
 export default async function MensajesPage({
   searchParams,

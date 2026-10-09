@@ -23,7 +23,7 @@ export async function reviewSubmission(campaignId: string, submissionId: string,
   const fail = (message: string): never => redirect(detailUrl(campaignId, submissionId, qs, { error: message }));
 
   const status = String(formData.get("status") ?? "");
-  if (!(REVIEW_STATUSES as readonly string[]).includes(status)) fail("Estado no válido.");
+  if (![...REVIEW_STATUSES, "confirmada"].includes(status)) fail("Estado no válido.");
   if (!UUID.test(campaignId) || !UUID.test(submissionId)) fail("Postulación no válida.");
 
   const note = String(formData.get("note") ?? "").trim().slice(0, 500);
@@ -34,6 +34,8 @@ export async function reviewSubmission(campaignId: string, submissionId: string,
         ? "La postulación ya no existe."
         : error.message === "archived"
           ? "La campaña está archivada: ya no se cambian estados."
+          : error.message === "consent_required"
+            ? "Para confirmar la vacante de una menor hace falta la autorización de su madre, padre o tutor (panel «Consentimiento del tutor»)."
           : `No se pudo cambiar el estado: ${error.message}`,
     );
   }
@@ -83,6 +85,10 @@ export async function saveTemplate(key: string, formData: FormData) {
   if (!/^[a-z_]{1,30}$/.test(key)) redirect(back({ error: "Plantilla no válida." }));
   if (!body) redirect(back({ error: "El mensaje no puede estar vacío." }));
   if (body.length > 1500) redirect(back({ error: "El mensaje es demasiado largo (máx. 1500 caracteres)." }));
+
+  if (key === "guardian_consent" && !/\{\{\s*enlace_consentimiento\s*\}\}/i.test(body)) {
+    redirect(back({ error: "Este mensaje tiene que incluir {{enlace_consentimiento}}: sin él el tutor no recibe el enlace." }));
+  }
 
   const unknown = unknownVariables(body);
   if (unknown.length > 0) {
@@ -290,4 +296,35 @@ export async function applySelection(campaignId: string) {
   const c = (data ?? {}) as Record<string, number>;
   const skipped = c.skipped ? ` (${c.skipped} ya tenían decisión y no se tocaron)` : "";
   redirect(back({ ok: `Selección aplicada: ${c.admitida ?? 0} aprobadas, ${c.lista_espera ?? 0} en lista de espera y ${c.descartada ?? 0} descartadas${skipped}.` }));
+}
+
+// ---------------------------------------------------------------- Consentimiento del tutor
+
+const CONSENT_ERRORS: Record<string, string> = {
+  not_minor: "Solo las postulantes menores de edad necesitan consentimiento del tutor.",
+  already_responded: "El tutor ya respondió. Para repetirlo, usa «Reiniciar».",
+  archived: "La campaña está archivada.",
+  not_found: "No hay nada que cambiar.",
+};
+
+async function consentCall(campaignId: string, submissionId: string, qs: string, rpc: string, ok: string) {
+  const { supabase } = await requireAdminOrThrow();
+  if (!UUID.test(submissionId)) redirect(detailUrl(campaignId, submissionId, qs, { error: "Postulación no válida." }));
+
+  const { error } = await supabase.rpc(rpc, { p_submission: submissionId });
+  if (error) redirect(detailUrl(campaignId, submissionId, qs, { error: CONSENT_ERRORS[error.message] ?? `No se pudo completar: ${error.message}` }));
+
+  revalidatePath(`/plataforma/campanas/${campaignId}`);
+  revalidatePath(`/plataforma/campanas/${campaignId}/${submissionId}`);
+  redirect(detailUrl(campaignId, submissionId, qs, { ok }));
+}
+
+export async function requestConsent(campaignId: string, submissionId: string, formData: FormData) {
+  await consentCall(campaignId, submissionId, String(formData.get("qs") ?? ""), "request_guardian_consent", "Enlace listo. Envíalo al tutor por WhatsApp.");
+}
+export async function resetConsent(campaignId: string, submissionId: string, formData: FormData) {
+  await consentCall(campaignId, submissionId, String(formData.get("qs") ?? ""), "reset_guardian_consent", "Consentimiento reiniciado: genera un enlace nuevo.");
+}
+export async function revokeConsent(campaignId: string, submissionId: string, formData: FormData) {
+  await consentCall(campaignId, submissionId, String(formData.get("qs") ?? ""), "revoke_guardian_consent", "Revocación registrada.");
 }

@@ -198,6 +198,18 @@ export default function SubmissionReview(p: SubmissionReviewProps) {
                     {actionLabel[s]}
                   </button>
                 ))}
+                {(sub.status === "admitida" || sub.status === "confirmada") && (
+                  <button
+                    type="submit"
+                    name="status"
+                    value="confirmada"
+                    className={styles.btnApprove}
+                    disabled={sub.status === "confirmada"}
+                    title={sub.status === "confirmada" ? "La vacante ya está confirmada" : "Confirma la vacante (en menores exige el consentimiento del tutor)"}
+                  >
+                    {sub.status === "confirmada" ? "Vacante confirmada" : "Confirmar vacante"}
+                  </button>
+                )}
               </div>
               {position.nextId && (
                 <label className={styles.flag}>

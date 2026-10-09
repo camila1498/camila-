@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import StatusPill from "@/components/admin/StatusPill";
 import { requireRole } from "@/lib/admin/auth";
+import { CONSENT_STATUS_LABELS, consentStatus } from "@/lib/consent/consent";
 import { formatLima } from "@/lib/forms/lima";
 import { STATUS_LABELS } from "@/lib/forms/review";
 import { cleanSearch, loadCampaign, loadStatusCounts } from "@/lib/forms/review-data";
@@ -18,7 +19,10 @@ type Row = {
   is_minor: boolean;
   created_at: string;
   country: string | null;
+  consent: ConsentRow | ConsentRow[] | null;
 };
+
+type ConsentRow = { expires_at: string; responded_at: string | null; data_consent: boolean | null; revoked_at: string | null };
 
 export default async function CampanaPage({
   params,
@@ -41,7 +45,7 @@ export default async function CampanaPage({
 
   let query = supabase
     .from("submissions")
-    .select("id,full_name,email,status,is_minor,created_at,country:answers->>C4", { count: "exact" })
+    .select("id,full_name,email,status,is_minor,created_at,country:answers->>C4,consent:guardian_consents(expires_at,responded_at,data_consent,revoked_at)", { count: "exact" })
     .eq("campaign_id", id)
     .is("archived_at", null)
     .order("created_at", { ascending: true })
@@ -169,6 +173,9 @@ export default async function CampanaPage({
                   <strong>
                     <Link href={`/plataforma/campanas/${id}/${r.id}${detailQs}`}>{r.full_name}</Link>
                     {r.is_minor && <span className={styles.badge}> Menor</span>}
+                    {r.is_minor && (
+                      <span className={styles.hint}> · tutor: {CONSENT_STATUS_LABELS[consentStatus(Array.isArray(r.consent) ? (r.consent[0] ?? null) : r.consent)].toLowerCase()}</span>
+                    )}
                   </strong>
                   <span>{r.email}</span>
                 </td>
