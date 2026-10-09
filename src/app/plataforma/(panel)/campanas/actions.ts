@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdminOrThrow } from "@/lib/admin/auth";
 import { REVIEW_STATUSES, STATUS_LABELS } from "@/lib/forms/review";
-import { UUID } from "@/lib/forms/review-data";
+import { loadCampaign, loadCampaignDefinition, UUID } from "@/lib/forms/review-data";
+import { buildSelection, selectionTargets } from "@/lib/selection/bootcamp";
+import { ageRangeOf, loadApplicants, supportsScoring } from "@/lib/selection/load";
 import { TEMPLATE_VARIABLES, unknownVariables } from "@/lib/messaging/templates";
 
 function detailUrl(campaignId: string, submissionId: string, qs: string, extra: Record<string, string> = {}) {
@@ -206,4 +208,86 @@ export async function archiveCampaign(campaignId: string, formData: FormData) {
   refreshStatsPages(campaignId);
   revalidatePath("/plataforma/vencimientos");
   redirect(closingUrl(campaignId, { ok: "Campaña archivada. Los plazos de conservación ya corren: míralos en Vencimientos." }));
+}
+
+// ---------------------------------------------------------------- Selección del Bootcamp
+
+const GRADE_ERRORS: Record<string, string> = {
+  invalid_grade: "Las notas no son válidas (B8 de 0 a 3, B9 de 0 a 2).",
+  first_missing: "La segunda revisión necesita que exista la primera.",
+  same_reviewer: "La segunda revisión tiene que hacerla otra persona distinta de la primera.",
+  archived: "La campaña está archivada: ya no se califica.",
+  not_found: "La postulación ya no existe.",
+};
+
+/** Guarda la calificación manual de B8 y B9 (primera o segunda revisión). */
+export async function gradeSubmission(campaignId: string, submissionId: string, slot: "first" | "second", formData: FormData) {
+  const { supabase } = await requireAdminOrThrow();
+  const qs = String(formData.get("qs") ?? "");
+  const fail = (message: string): never => redirect(detailUrl(campaignId, submissionId, qs, { error: message }));
+  if (!UUID.test(campaignId) || !UUID.test(submissionId)) fail("Postulación no válida.");
+
+  const b8 = Number.parseInt(String(formData.get("b8") ?? ""), 10);
+  const b9 = Number.parseInt(String(formData.get("b9") ?? ""), 10);
+  if (!Number.isInteger(b8) || !Number.isInteger(b9)) fail("Elige una nota para B8 y para B9.");
+
+  const { error } = await supabase.rpc("grade_submission", {
+    p_id: submissionId,
+    p_slot: slot,
+    p_b8: b8,
+    p_b9: b9,
+    p_off_topic: formData.get("off_topic") === "on",
+  });
+  if (error) fail(GRADE_ERRORS[error.message] ?? `No se pudo guardar: ${error.message}`);
+
+  revalidatePath(`/plataforma/campanas/${campaignId}/seleccion`);
+  const next = formData.get("advance") === "on" ? String(formData.get("next") ?? "") : "";
+  const message = slot === "first" ? "Calificación guardada." : "Segunda revisión guardada.";
+  if (UUID.test(next)) redirect(detailUrl(campaignId, next, qs, { ok: `${message} Siguiente postulación.` }));
+  redirect(detailUrl(campaignId, submissionId, qs, { ok: message }));
+}
+
+export async function setEquipmentSolved(campaignId: string, submissionId: string, on: boolean, formData: FormData) {
+  const { supabase } = await requireAdminOrThrow();
+  const qs = String(formData.get("qs") ?? "");
+  if (!UUID.test(submissionId)) redirect(detailUrl(campaignId, submissionId, qs, { error: "Postulación no válida." }));
+
+  const { error } = await supabase.rpc("set_submission_tag", { p_id: submissionId, p_tag: "equipo-conseguido", p_on: on });
+  if (error) redirect(detailUrl(campaignId, submissionId, qs, { error: `No se pudo guardar: ${error.message}` }));
+
+  revalidatePath(`/plataforma/campanas/${campaignId}/seleccion`);
+  redirect(detailUrl(campaignId, submissionId, qs, { ok: on ? "Marcada con equipo conseguido." : "Se quitó la marca de equipo conseguido." }));
+}
+
+const SELECTION_ERRORS: Record<string, string> = {
+  not_closed: "La selección se aplica con la campaña cerrada (y sin archivar).",
+  not_found: "La campaña ya no existe.",
+};
+
+/** Aplica la propuesta de selección. Se recalcula aquí con los datos actuales: no se confía en lo que muestra la pantalla. */
+export async function applySelection(campaignId: string) {
+  const { supabase } = await requireAdminOrThrow();
+  const back = (params: Record<string, string>) => `/plataforma/campanas/${campaignId}/seleccion?${new URLSearchParams(params).toString()}`;
+  if (!UUID.test(campaignId)) redirect("/plataforma/campanas");
+
+  const campaign = await loadCampaign(supabase, campaignId);
+  const def = campaign ? await loadCampaignDefinition(supabase, campaign) : null;
+  if (!campaign || !supportsScoring(campaign.form_slug, def)) redirect(back({ error: "Esta campaña no usa puntaje." }));
+  const capacity = campaign!.capacity;
+  if (!capacity) redirect(back({ error: "Define los cupos de la campaña para poder seleccionar." }));
+
+  const result = buildSelection(await loadApplicants(supabase, campaignId), capacity!, ageRangeOf(def!));
+  if (result.ungraded > 0) redirect(back({ error: `Faltan ${result.ungraded} postulaciones por calificar.` }));
+
+  const { admit, wait, discard } = selectionTargets(result);
+  if (admit.length + wait.length + discard.length === 0) redirect(back({ ok: "No había nada pendiente que aplicar." }));
+
+  const { data, error } = await supabase.rpc("apply_selection", { p_campaign: campaignId, p_admit: admit, p_wait: wait, p_discard: discard });
+  if (error) redirect(back({ error: SELECTION_ERRORS[error.message] ?? `No se pudo aplicar: ${error.message}` }));
+
+  revalidatePath(`/plataforma/campanas/${campaignId}`);
+  revalidatePath("/plataforma/campanas");
+  const c = (data ?? {}) as Record<string, number>;
+  const skipped = c.skipped ? ` (${c.skipped} ya tenían decisión y no se tocaron)` : "";
+  redirect(back({ ok: `Selección aplicada: ${c.admitida ?? 0} aprobadas, ${c.lista_espera ?? 0} en lista de espera y ${c.descartada ?? 0} descartadas${skipped}.` }));
 }

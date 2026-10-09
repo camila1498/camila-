@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import SelectionPanel from "@/components/admin/SelectionPanel";
 import SubmissionReview from "@/components/admin/SubmissionReview";
 import { requireRole } from "@/lib/admin/auth";
 import { guardianNameId, guardianPhoneId, labeledAnswers } from "@/lib/forms/review";
@@ -6,7 +7,9 @@ import { cleanSearch, loadCampaign, loadCampaignDefinition, UUID } from "@/lib/f
 import { toWhatsAppNumber } from "@/lib/messaging/phone";
 import { firstName, renderTemplate, templateForStatus } from "@/lib/messaging/templates";
 import { whatsappUrl } from "@/lib/messaging/whatsapp";
-import { reviewSubmission, saveNotes } from "../../actions";
+import { discardReasons } from "@/lib/selection/bootcamp";
+import { ageRangeOf, loadReviewerNames, supportsScoring, toApplicant } from "@/lib/selection/load";
+import { gradeSubmission, reviewSubmission, saveNotes, setEquipmentSolved } from "../../actions";
 
 type Submission = {
   id: string;
@@ -21,15 +24,17 @@ type Submission = {
   status: string;
   notes: string | null;
   created_at: string;
+  tags: string[] | null;
+  score_review: Record<string, unknown> | null;
 };
 
 type EventRow = {
   id: string;
-  kind: "status" | "note" | "whatsapp" | "email";
+  kind: "status" | "note" | "whatsapp" | "email" | "grade";
   from_status: string | null;
   to_status: string | null;
   note: string | null;
-  detail: { template?: string; to?: string; who?: string } | null;
+  detail: { template?: string; to?: string; who?: string; slot?: string; b8?: number; b9?: number; offTopic?: boolean } | null;
   created_by: string | null;
   created_at: string;
 };
@@ -45,7 +50,7 @@ export default async function PostulacionPage({
 }) {
   const { id, submissionId } = await params;
   const sp = await searchParams;
-  const { supabase } = await requireRole("admin");
+  const { supabase, user } = await requireRole("admin");
 
   if (!UUID.test(submissionId)) notFound();
   const campaign = await loadCampaign(supabase, id);
@@ -53,7 +58,7 @@ export default async function PostulacionPage({
 
   const { data: sub } = await supabase
     .from("submissions")
-    .select("id,campaign_id,form_slug,full_name,email,answers,is_minor,consent_privacy_at,consent_marketing,status,notes,created_at")
+    .select("id,campaign_id,form_slug,full_name,email,answers,is_minor,consent_privacy_at,consent_marketing,status,notes,created_at,tags,score_review")
     .eq("id", submissionId)
     .eq("campaign_id", id)
     .maybeSingle()
@@ -150,6 +155,44 @@ export default async function PostulacionPage({
   const personUrl = message && person.digits ? whatsappUrl(person.digits, message) : null;
   const guardianUrl = guardianMessage && guardianNumber?.digits ? whatsappUrl(guardianNumber.digits, guardianMessage) : null;
 
+  // Puntaje del Bootcamp: solo en campañas cuya versión conserva las preguntas que lo alimentan.
+  let scoring: React.ReactNode = null;
+  if (supportsScoring(campaign.form_slug, def)) {
+    const applicant = toApplicant({
+      id: sub.id,
+      full_name: sub.full_name,
+      created_at: sub.created_at,
+      status: sub.status,
+      tags: sub.tags,
+      score_review: sub.score_review as never,
+      b1: sub.answers.B1 === undefined ? null : String(sub.answers.B1),
+      b5: (sub.answers.B5 as string) ?? null,
+      b7: (sub.answers.B7 as string) ?? null,
+      b10: (sub.answers.B10 as string) ?? null,
+      b11: (sub.answers.B11 as string) ?? null,
+      b12: (sub.answers.B12 as string) ?? null,
+    });
+    const names = await loadReviewerNames(
+      supabase,
+      [applicant.review.first?.by, applicant.review.second?.by].filter((x): x is string => Boolean(x)),
+    );
+    scoring = (
+      <SelectionPanel
+        applicant={applicant}
+        discard={discardReasons(applicant, ageRangeOf(def))}
+        me={user.id}
+        names={names}
+        locked={campaign.status === "archived"}
+        qs={qs}
+        nextId={nextId}
+        gradeFirst={gradeSubmission.bind(null, id, submissionId, "first")}
+        gradeSecond={gradeSubmission.bind(null, id, submissionId, "second")}
+        equipmentOn={setEquipmentSolved.bind(null, id, submissionId, true)}
+        equipmentOff={setEquipmentSolved.bind(null, id, submissionId, false)}
+      />
+    );
+  }
+
   const reviewAction = reviewSubmission.bind(null, id, submissionId);
   const notesAction = saveNotes.bind(null, id, submissionId);
 
@@ -168,6 +211,7 @@ export default async function PostulacionPage({
       events={events.map((e) => ({ ...e, authorName: authorName(e.created_by) }))}
       position={{ prevId, nextId, index: at, total: ids.length }}
       whatsapp={{ template: templateKey ?? null, firstName: vars.nombre, message, personUrl, guardianUrl }}
+      extra={scoring}
       reviewAction={reviewAction}
       notesAction={notesAction}
     />

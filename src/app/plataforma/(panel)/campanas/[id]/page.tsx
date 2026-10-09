@@ -80,9 +80,16 @@ export default async function CampanaPage({
             {campaign.status === "open" ? "recibiendo postulaciones" : `${campaign.status === "archived" ? "archivada · " : ""}cerrada ${formatLima(campaign.closed_at)}`}
           </p>
         </div>
+        <div className={styles.formActions}>
+        {campaign.form_slug === "bootcamp" && (
+          <Link href={`/plataforma/campanas/${id}/seleccion`} className={styles.btnGhost}>
+            Selección por puntaje
+          </Link>
+        )}
         <Link href={`/plataforma/campanas/${id}/cierre`} className={campaign.status === "open" ? styles.btnGhost : styles.btn}>
           {campaign.status === "open" ? "Cierre y exportación" : "Cifras y exportación"}
         </Link>
+        </div>
       </div>
 
       <div className={styles.stats}>
