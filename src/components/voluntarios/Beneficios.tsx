@@ -1,5 +1,5 @@
+import Link from "next/link";
 import SectionHead from "@/components/ui/SectionHead";
-import { VOLUNTEER_FORM_URL } from "@/lib/constants";
 import styles from "./Beneficios.module.css";
 
 const beneficios = [
@@ -55,9 +55,9 @@ export default function Beneficios() {
           ))}
         </div>
         <p className={styles.cta}>
-          <a href={VOLUNTEER_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary">
+          <Link href="/unete/voluntariado" className="btn-primary">
             Quiero ser voluntaria →
-          </a>
+          </Link>
         </p>
       </div>
     </section>

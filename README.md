@@ -30,12 +30,15 @@ Sin las variables de entorno, `/oportunidades` muestra un aviso en vez del lista
      y ejecuta `supabase/seed.sql` (SQL Editor o `npx supabase db push --include-seed`).
    - **Sin CLI**: pega `supabase/migrations/*.sql` y luego `supabase/seed.sql` en el SQL Editor.
 4. Aplica también las migraciones `20261006000000_becas_rank.sql` (reordenar el ranking) y
-   `20261007000000_members.sql` (miembros con rol; reemplaza a la tabla `admins`).
+   `20261007000000_members.sql` (miembros con rol; reemplaza a la tabla `admins`) y
+   `20261009000000_forms.sql` (formularios propios y sus respuestas) y
+   `20261010000000_campaigns.sql` (campañas, versiones editables y configuración legal) y
+   `20261011000000_create_form.sql` (crear y eliminar formularios nuevos).
 
 ## Plataforma (`/plataforma`)
 
 Vista administrativa con sidebar: dashboard, becas (crear, editar, eliminar, ocultar/publicar,
-rankear) y miembros. Aquí irán también los inscritos en bootcamps, visitantes y demás.
+rankear), formularios (editar, publicar y cerrar campañas), miembros y configuración legal. Aquí irán también los inscritos en bootcamps, visitantes y demás.
 
 **Acceso**: se ingresa con Google desde el botón "Ingresar" de la landing (o `/plataforma/login`).
 Solo entran los correos registrados en la tabla `members`; el resto se desconecta de inmediato.
@@ -65,6 +68,51 @@ Antes de su primer ingreso, regístralo en el SQL Editor (los siguientes se agre
 Quien aún no esté registrado puede crear una cuenta de Google en Supabase al intentar entrar,
 pero no obtiene ningún acceso: se desconecta y no puede leer ni escribir datos.
 
+## Formularios y campañas
+
+Cinco formularios propios (voluntariado, aliados, mentee de EmpleaLab, mentee de CreateWomen y
+postulación al Bootcamp 2026) reemplazan a los Google Forms. Vienen del documento *Formularios
+CreateLatam 2026*. **Se editan y se publican desde `/plataforma/formularios`**, sin tocar código.
+
+**Formularios nuevos.** "+ Nuevo formulario" crea otro (para un taller, un evento, una encuesta…):
+se parte **en blanco** (siempre con nombre, correo, teléfono, país y consentimiento, que son
+obligatorios en cualquier formulario) o **copiando** uno existente. Vive en `/formularios/<enlace>`
+(el enlace se elige al crearlo y no cambia) y pasa por el mismo flujo de edición, publicación y
+campañas. Mientras nunca se haya publicado se puede eliminar; después se conserva por su historial.
+
+| Ruta pública | Formulario |
+|---|---|
+| `/unete/voluntariado`, `/unete/aliados` | Voluntariado y Aliados (los dos CTAs de Únete) |
+| `/programas/emplealab/postular`, `/programas/createwomen/postular` | Mentees |
+| `/bootcamp/postular` | Postulación al Bootcamp 2026 |
+
+**Editar (solo antes de publicar).** El editor modifica un *borrador*: título, texto introductorio,
+botón, plazo de conservación y, por pregunta, texto, ayuda, obligatoriedad, opciones, límites, orden,
+visibilidad y condiciones; también se pueden agregar preguntas. Las preguntas *base* (nombre, correo,
+teléfono, país, consentimiento, edad y datos del tutor) no se quitan ni cambian de tipo, y las que
+alimentan el puntaje tienen opciones fijas. Una pregunta ya publicada no se borra: se oculta, para
+no perder el historial. La vista previa del editor es la misma que verá la persona.
+
+**Publicar = abrir una campaña.** "Publicar…" muestra una alerta de revisión (resumen, cambios desde
+la versión anterior, requisitos) y exige confirmar. Al publicar, el borrador se congela como una
+*versión* inmutable y se abre una *campaña* (una edición: "Bootcamp 2026") con su ventana de fechas
+(hora de Lima) y cupos. **Mientras la campaña está abierta, el formulario no admite cambios** (lo
+impiden la interfaz, el servidor y la base de datos). Para corregir algo hay que *cerrar la campaña*,
+editar y volver a publicar: la nueva campaña usa la versión nueva y las respuestas anteriores
+conservan la suya. Cada correo puede postular una vez **por campaña**.
+
+**Requisitos para publicar y recibir envíos** (también los exige la base de datos): datos legales
+completos y **aprobados por Legal** en `/plataforma/configuracion` (RUC, domicilio, correo de
+privacidad; cambiar un dato retira la aprobación) y ningún marcador pendiente tipo `[horario]` o
+`[●]` en los textos. El aviso de privacidad es un borrador pendiente de aprobación de Legal.
+
+Las respuestas las guarda la función `submit_form` (valida que haya campaña abierta, que Legal haya
+aprobado y rechaza duplicados); solo los admins pueden leerlas. Lo que pueda traer datos de salud
+(B13) va en una tabla aparte. Las definiciones viven en la base de datos (`form_drafts`,
+`form_versions`, `campaigns`); la versión 1 sale de `supabase/migrations/20261010000000_campaigns.sql`.
+
+Compilar mientras corre `npm run dev`: `NEXT_DIST_DIR=.next-build npm run build` (usa otra carpeta de salida).
+
 ## Estructura del sitio
 
 | Ruta | Contenido |
@@ -73,7 +121,7 @@ pero no obtiene ningún acceso: se desconecta y no puede leer ni escribir datos.
 | `/programas`, `/programas/[slug]` | Emplealab, Createwomen, Eventos |
 | `/equipo` | Voluntarios por área (`/voluntarios` redirige aquí) |
 | `/oportunidades` | Becas: pestañas Database y Rankeadas, públicas (`/becas` redirige aquí) |
-| `/unete` | Beneficios, roles abiertos y formulario de voluntario |
+| `/unete` | Beneficios, roles abiertos y los CTAs de voluntariado y aliados |
 | `/plataforma` | Plataforma con sidebar (ingreso con Google, solo miembros registrados) |
 
 ## Arquitectura
@@ -104,6 +152,6 @@ admin; si la posición ya la tiene otra beca, las dos intercambian.
 ## Próximos pasos
 
 - **Supabase para el resto del contenido** (equipo, programas, testimonios), hoy en `src/data/`.
-- **Formularios propios** para mentee (Emplealab, Createwomen) y voluntario, guardados en
-  Supabase (hoy apuntan a Google Forms vía `src/lib/constants.ts`).
-- **Respuestas de formularios en el panel**: verlas, exportarlas y archivar las antiguas.
+- **Respuestas de formularios en la plataforma**: verlas, puntuarlas (Bootcamp), exportarlas y
+  archivar las antiguas.
+- **Consentimiento del tutor** para menores y contador de cupos del Bootcamp.

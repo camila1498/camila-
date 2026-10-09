@@ -4,7 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Beneficios from "@/components/voluntarios/Beneficios";
 import RolesAbiertos from "@/components/voluntarios/RolesAbiertos";
-import { CONTACT_EMAIL, VOLUNTEER_FORM_URL } from "@/lib/constants";
+import { CONTACT_EMAIL } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Únete — CreateLatam",
@@ -24,10 +24,13 @@ export default function UnetePage() {
             Estamos relanzando CreateLatam con una nueva estructura. Si quieres ser parte de la
             comunidad que forma a la próxima generación de mujeres en tech, este es el momento.
           </p>
-          <p style={{ marginTop: 24 }}>
-            <a href={VOLUNTEER_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary">
-              Formulario de voluntario →
-            </a>
+          <p style={{ marginTop: 24, display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <Link href="/unete/voluntariado" className="btn-primary">
+              Quiero ser voluntaria/o →
+            </Link>
+            <Link href="/unete/aliados" className="btn-ghost">
+              Quiero ser aliada/o
+            </Link>
           </p>
         </div>
       </section>
