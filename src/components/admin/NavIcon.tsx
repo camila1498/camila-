@@ -29,6 +29,12 @@ const paths: Record<NavItem["icon"], React.ReactNode> = {
       <path d="m10 8.5 4 2-4 2Z" />
     </>
   ),
+  forms: (
+    <>
+      <path d="M6 3h9l4 4v14H6z" />
+      <path d="M14 3v5h5M9 13h6M9 17h6" />
+    </>
+  ),
   visitors: (
     <>
       <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />

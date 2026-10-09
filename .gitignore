@@ -19,3 +19,6 @@
 npm-debug.log*
 .vscode/
 *.tsbuildinfo
+
+# salida de compilaciones paralelas
+/.next-*/

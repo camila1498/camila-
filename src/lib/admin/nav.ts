@@ -3,7 +3,7 @@ import type { Role } from "./auth";
 export type NavItem = {
   href: string;
   label: string;
-  icon: "dashboard" | "becas" | "members" | "bootcamps" | "visitors";
+  icon: "dashboard" | "becas" | "members" | "bootcamps" | "visitors" | "forms";
   /** Roles que ven el item. Para sumar vistas de equipo/estudiantes basta ampliar esta lista. */
   roles: Role[];
   /** Vistas planeadas que aun no existen: se muestran deshabilitadas. */
@@ -24,6 +24,7 @@ export const navSections: NavSection[] = [
   {
     title: "Comunidad",
     items: [
+      { href: "/plataforma/formularios", label: "Formularios", icon: "forms", roles: ["admin"] },
       { href: "/plataforma/bootcamps", label: "Inscritos en bootcamps", icon: "bootcamps", roles: ["admin"], soon: true },
       { href: "/plataforma/visitantes", label: "Visitantes", icon: "visitors", roles: ["admin"], soon: true },
     ],

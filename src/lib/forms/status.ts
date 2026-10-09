@@ -16,6 +16,27 @@ type FormRow = {
   capacity: number | null;
 };
 
+export type FormRowStatus = {
+  status: "draft" | "open" | "closed";
+  opens_at: string | null;
+  closes_at: string | null;
+};
+
+/** Disponibilidad efectiva de un formulario a partir de su fila y de lo que falta por configurar. */
+export function computeAvailability(row: FormRowStatus | null, missing: string[]): Availability {
+  if (!row) return "soon";
+  const now = Date.now();
+  let availability: Availability = "open";
+  if (row.status === "draft") availability = "soon";
+  else if (row.status === "closed") availability = "closed";
+  else if (row.opens_at && now < Date.parse(row.opens_at)) availability = "soon";
+  else if (row.closes_at && now > Date.parse(row.closes_at)) availability = "closed";
+
+  // Aunque este "abierto" en la base, sin datos legales completos no se reciben respuestas.
+  if (availability === "open" && missing.length > 0) availability = "soon";
+  return availability;
+}
+
 export async function getAvailability(slug: FormDefinition["slug"]): Promise<{
   availability: Availability;
   missing: string[];
@@ -32,17 +53,5 @@ export async function getAvailability(slug: FormDefinition["slug"]): Promise<{
     .maybeSingle()
     .overrideTypes<FormRow, { merge: false }>();
 
-  if (!data) return { availability: "soon", missing, capacity: null };
-
-  const now = Date.now();
-  let availability: Availability = "open";
-  if (data.status === "draft") availability = "soon";
-  else if (data.status === "closed") availability = "closed";
-  else if (data.opens_at && now < Date.parse(data.opens_at)) availability = "soon";
-  else if (data.closes_at && now > Date.parse(data.closes_at)) availability = "closed";
-
-  // Aunque este "abierto" en la base, sin datos legales completos no se reciben respuestas.
-  if (availability === "open" && missing.length > 0) availability = "soon";
-
-  return { availability, missing, capacity: data.capacity };
+  return { availability: computeAvailability(data, missing), missing, capacity: data?.capacity ?? null };
 }

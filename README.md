@@ -36,7 +36,7 @@ Sin las variables de entorno, `/oportunidades` muestra un aviso en vez del lista
 ## Plataforma (`/plataforma`)
 
 Vista administrativa con sidebar: dashboard, becas (crear, editar, eliminar, ocultar/publicar,
-rankear) y miembros. Aquí irán también los inscritos en bootcamps, visitantes y demás.
+rankear), formularios (abrir/cerrar postulaciones) y miembros. Aquí irán también los inscritos en bootcamps, visitantes y demás.
 
 **Acceso**: se ingresa con Google desde el botón "Ingresar" de la landing (o `/plataforma/login`).
 Solo entran los correos registrados en la tabla `members`; el resto se desconecta de inmediato.
@@ -87,8 +87,12 @@ datos legales o del programa**: las variables de entorno `LEGAL_RUC`, `LEGAL_ADD
 `LEGAL_PRIVACY_EMAIL` y `BOOTCAMP_SCHEDULE` (solo servidor; en Vercel y en `.env.local`). El rango de
 edad y las fechas están en `src/lib/forms/config.ts`. El aviso de privacidad es un borrador pendiente de aprobación de Legal.
 
-Para abrir uno (cuando Legal apruebe y los datos estén completos):
-`update public.forms set status = 'open' where slug = 'voluntariado';`
+**Abrir y cerrar desde la plataforma**: en `/plataforma/formularios` cada formulario tiene un botón
+"Abrir postulaciones" / "Cerrar postulaciones", y opcionalmente una ventana de fechas (hora de Lima) y
+cupos: con fechas se abre y se cierra solo. La plataforma no deja abrir un formulario mientras falten
+datos legales. Las respuestas se pueden contar ahí; la vista de respuestas y la exportación vienen después.
+
+Compilar mientras corre `npm run dev`: `NEXT_DIST_DIR=.next-build npm run build` (usa otra carpeta de salida).
 
 Las respuestas las guarda la función `submit_form` (valida que esté abierto y rechaza duplicados);
 solo los admins pueden leerlas. Lo que pueda traer datos de salud (B13) va en una tabla aparte.
