@@ -83,9 +83,9 @@ preguntas, sube `version` de esa definición.
 **Nacen cerrados.** Cada formulario tiene un estado en la tabla `forms` (`draft`, `open`, `closed`,
 con fechas opcionales). Mientras no se abra, la página muestra "abrirá pronto" (y, si existía, el
 Google Form anterior como respaldo). Además, aunque esté `open`, **no recibe envíos mientras falten
-datos legales o del programa**: RUC, domicilio y correo de privacidad en `src/lib/legal.ts`, y el
-horario del Bootcamp en `src/lib/forms/config.ts` (ahí también están el rango de edad y las fechas).
-El aviso de privacidad es un borrador pendiente de aprobación de Legal.
+datos legales o del programa**: las variables de entorno `LEGAL_RUC`, `LEGAL_ADDRESS`,
+`LEGAL_PRIVACY_EMAIL` y `BOOTCAMP_SCHEDULE` (solo servidor; en Vercel y en `.env.local`). El rango de
+edad y las fechas están en `src/lib/forms/config.ts`. El aviso de privacidad es un borrador pendiente de aprobación de Legal.
 
 Para abrir uno (cuando Legal apruebe y los datos estén completos):
 `update public.forms set status = 'open' where slug = 'voluntariado';`

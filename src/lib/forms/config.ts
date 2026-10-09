@@ -10,8 +10,8 @@ export const programRules = {
   age: { min: 14, max: 24 },
   bootcampDates: "del 14 al 23 de diciembre de 2026",
   empleaLabDates: "del 26 al 30 de diciembre de 2026",
-  /** Horario de las sesiones del Bootcamp. El documento lo deja como [horario]. */
-  bootcampSchedule: "",
+  /** Horario de las sesiones del Bootcamp (variable BOOTCAMP_SCHEDULE). El documento lo deja como [horario]. */
+  bootcampSchedule: process.env.BOOTCAMP_SCHEDULE?.trim() ?? "",
 };
 
 /** Lo que falta por definir para poder abrir un formulario (vacio = listo). */
