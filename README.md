@@ -33,12 +33,13 @@ Sin las variables de entorno, `/oportunidades` muestra un aviso en vez del lista
    `20261007000000_members.sql` (miembros con rol; reemplaza a la tabla `admins`) y
    `20261009000000_forms.sql` (formularios propios y sus respuestas) y
    `20261010000000_campaigns.sql` (campañas, versiones editables y configuración legal) y
-   `20261011000000_create_form.sql` (crear y eliminar formularios nuevos).
+   `20261011000000_create_form.sql` (crear y eliminar formularios nuevos) y
+   `20261012000000_reviews.sql` (historial de postulaciones y plantillas de mensajes).
 
 ## Plataforma (`/plataforma`)
 
 Vista administrativa con sidebar: dashboard, becas (crear, editar, eliminar, ocultar/publicar,
-rankear), formularios (editar, publicar y cerrar campañas), miembros y configuración legal. Aquí irán también los inscritos en bootcamps, visitantes y demás.
+rankear), formularios (editar, publicar y cerrar campañas), respuestas (revisar y avisar por WhatsApp), mensajes, miembros y configuración legal. Aquí irán también los inscritos en bootcamps, visitantes y demás.
 
 **Acceso**: se ingresa con Google desde el botón "Ingresar" de la landing (o `/plataforma/login`).
 Solo entran los correos registrados en la tabla `members`; el resto se desconecta de inmediato.
@@ -113,6 +114,25 @@ aprobado y rechaza duplicados); solo los admins pueden leerlas. Lo que pueda tra
 
 Compilar mientras corre `npm run dev`: `NEXT_DIST_DIR=.next-build npm run build` (usa otra carpeta de salida).
 
+## Respuestas y mensajes
+
+**Revisar postulaciones** (`/plataforma/campanas`). Cada campaña muestra cuántas postulaciones hay por estado
+y, al abrirla, una tabla con filtros (estado, búsqueda por nombre o correo, solo menores) y paginación.
+**"Ver"** abre la postulación con todas las respuestas, escritas con las preguntas de **la versión con que se
+respondió** (aunque el formulario haya cambiado después), el tutor si es menor de edad, y la respuesta sensible
+(B13) marcada. Desde ahí se marca como **Aprobada**, **Lista de espera**, **Pendiente** o **Descartada**, con una
+nota opcional; todo queda en el **historial** (quién, cuándo, de qué estado a cuál) y no se puede editar ni borrar.
+Hay navegación anterior/siguiente que respeta los filtros, y notas internas.
+
+**Avisar por WhatsApp (sin API).** Junto a la revisión aparece el botón verde de WhatsApp: abre `wa.me` con el
+chat del número de la persona (y el de su tutor, si es menor) y el mensaje de la plantilla correspondiente al
+estado ya escrito; una persona del equipo lo envía desde su propio WhatsApp. Cada apertura queda en el historial.
+Si el número no trae código de país, se le agrega el del país indicado y se avisa para que se revise.
+
+**Plantillas** (`/plataforma/mensajes`): aprobada, lista de espera y no seleccionada. Admiten las variables
+`{{nombre}}`, `{{nombre_completo}}`, `{{formulario}}` y `{{campana}}` (una lista cerrada; cualquier otra se rechaza
+al guardar).
+
 ## Estructura del sitio
 
 | Ruta | Contenido |
@@ -152,6 +172,6 @@ admin; si la posición ya la tiene otra beca, las dos intercambian.
 ## Próximos pasos
 
 - **Supabase para el resto del contenido** (equipo, programas, testimonios), hoy en `src/data/`.
-- **Respuestas de formularios en la plataforma**: verlas, puntuarlas (Bootcamp), exportarlas y
-  archivar las antiguas.
+- **Cierre de campaña y datos para la web**: cifras agregadas (p. ej. 500 postulaciones para 50 cupos), exportación y
+  archivado de las antiguas; **puntaje del Bootcamp** (reglas del PDF §6).
 - **Consentimiento del tutor** para menores y contador de cupos del Bootcamp.

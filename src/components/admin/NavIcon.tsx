@@ -35,6 +35,18 @@ const paths: Record<NavItem["icon"], React.ReactNode> = {
       <path d="M14 3v5h5M9 13h6M9 17h6" />
     </>
   ),
+  inbox: (
+    <>
+      <path d="M3 13l3-8h12l3 8" />
+      <path d="M3 13v6a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-6h-5l-1.5 2.5h-3L8 13H3Z" />
+    </>
+  ),
+  messages: (
+    <>
+      <path d="M21 12a8 8 0 0 1-11.7 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12Z" />
+      <path d="M9 10h6M9 14h4" />
+    </>
+  ),
   settings: (
     <>
       <circle cx="12" cy="12" r="3" />

@@ -119,6 +119,9 @@ export default function FormAdminCard({ row }: { row: FormAdminRow }) {
               label="Cerrar campaña"
               message={`¿Cerrar "${open.name}"? Dejará de recibir postulaciones (${open.submissions} recibidas). El formulario se podrá editar de nuevo.`}
             />
+            <Link href={`/plataforma/campanas/${open.id}`} className={styles.btnGhost}>
+              Ver respuestas ({open.submissions})
+            </Link>
             <span className={styles.hint}>Publicado: no se puede editar mientras reciba postulaciones.</span>
           </>
         ) : (
@@ -153,7 +156,8 @@ export default function FormAdminCard({ row }: { row: FormAdminRow }) {
             {row.past.map((c) => (
               <li key={c.id}>
                 <strong>{c.name}</strong> · v{c.version} · {c.submissions} respuestas
-                {c.capacity ? ` · ${c.capacity} cupos` : ""} · cerrada {formatLima(c.closed_at)}
+                {c.capacity ? ` · ${c.capacity} cupos` : ""} · cerrada {formatLima(c.closed_at)} ·{" "}
+                <Link href={`/plataforma/campanas/${c.id}`}>Ver respuestas</Link>
               </li>
             ))}
           </ul>
