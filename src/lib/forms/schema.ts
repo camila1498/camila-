@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SLUG_MAX, SLUG_PATTERN } from "./paths";
 import type { Condition, Field, FormDefinition } from "./types";
 
 /**
@@ -57,7 +58,7 @@ const field = z.discriminatedUnion("type", [
 
 export const definitionSchema = z.object({
   schemaVersion: z.literal(1).optional(),
-  slug: z.enum(["voluntariado", "aliados", "emplealab", "createwomen", "bootcamp"]),
+  slug: z.string().max(SLUG_MAX).regex(SLUG_PATTERN),
   version: z.number().int().min(1),
   title: z.string().trim().min(1, "El título es obligatorio").max(200),
   intro: z.string().trim().max(3000),
@@ -106,6 +107,21 @@ const conditionFields = (c: Condition | undefined) => (c ? [c.field] : []);
 export function validateDefinition(next: FormDefinition, published: FormDefinition | null): string[] {
   const errors: string[] = [];
   const fields = fieldsOf(next);
+
+  // Cualquier formulario necesita nombre, correo y consentimiento: la base de datos los exige al guardar.
+  const requiredBase: [string, Field["type"], string][] = [
+    ["C1", "text", "nombre"],
+    ["C2", "email", "correo"],
+    ["C7", "checkbox", "consentimiento"],
+  ];
+  for (const [id, type, name] of requiredBase) {
+    const f = fields.find((x) => x.id === id);
+    if (!f || f.type !== type || f.hidden || f.showIf) {
+      errors.push(`Falta la pregunta base de ${name} (${id}): debe existir, estar visible y sin condición.`);
+    } else if (id === "C7" && f.required !== true) {
+      errors.push("La casilla de consentimiento (C7) debe ser obligatoria.");
+    }
+  }
 
   const seen = new Set<string>();
   fields.forEach((f) => {

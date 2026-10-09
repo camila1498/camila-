@@ -32,7 +32,8 @@ Sin las variables de entorno, `/oportunidades` muestra un aviso en vez del lista
 4. Aplica también las migraciones `20261006000000_becas_rank.sql` (reordenar el ranking) y
    `20261007000000_members.sql` (miembros con rol; reemplaza a la tabla `admins`) y
    `20261009000000_forms.sql` (formularios propios y sus respuestas) y
-   `20261010000000_campaigns.sql` (campañas, versiones editables y configuración legal).
+   `20261010000000_campaigns.sql` (campañas, versiones editables y configuración legal) y
+   `20261011000000_create_form.sql` (crear y eliminar formularios nuevos).
 
 ## Plataforma (`/plataforma`)
 
@@ -72,6 +73,12 @@ pero no obtiene ningún acceso: se desconecta y no puede leer ni escribir datos.
 Cinco formularios propios (voluntariado, aliados, mentee de EmpleaLab, mentee de CreateWomen y
 postulación al Bootcamp 2026) reemplazan a los Google Forms. Vienen del documento *Formularios
 CreateLatam 2026*. **Se editan y se publican desde `/plataforma/formularios`**, sin tocar código.
+
+**Formularios nuevos.** "+ Nuevo formulario" crea otro (para un taller, un evento, una encuesta…):
+se parte **en blanco** (siempre con nombre, correo, teléfono, país y consentimiento, que son
+obligatorios en cualquier formulario) o **copiando** uno existente. Vive en `/formularios/<enlace>`
+(el enlace se elige al crearlo y no cambia) y pasa por el mismo flujo de edición, publicación y
+campañas. Mientras nunca se haya publicado se puede eliminar; después se conserva por su historial.
 
 | Ruta pública | Formulario |
 |---|---|

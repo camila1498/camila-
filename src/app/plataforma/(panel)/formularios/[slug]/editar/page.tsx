@@ -4,14 +4,14 @@ import FormBuilder from "@/components/admin/FormBuilder";
 import { requireRole } from "@/lib/admin/auth";
 import { loadFormState } from "@/lib/forms/admin";
 import { loadLegal } from "@/lib/forms/legal-admin";
-import { formPaths } from "@/lib/forms/paths";
+import { SLUG_MAX, SLUG_PATTERN } from "@/lib/forms/paths";
 import { fieldsOf } from "@/lib/forms/schema";
 import styles from "../../../../admin.module.css";
 import { saveDraft } from "./actions";
 
 export default async function EditarFormularioPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  if (!(slug in formPaths)) notFound();
+  if (!SLUG_PATTERN.test(slug) || slug.length > SLUG_MAX) notFound();
 
   const { supabase } = await requireRole("admin");
   const [state, legalRow] = await Promise.all([loadFormState(supabase, slug), loadLegal(supabase)]);

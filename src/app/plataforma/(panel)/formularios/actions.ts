@@ -6,10 +6,11 @@ import { requireAdminOrThrow } from "@/lib/admin/auth";
 import { checkPublishable, loadFormState } from "@/lib/forms/admin";
 import { fromLimaInput } from "@/lib/forms/lima";
 import { legalStatus, loadLegal } from "@/lib/forms/legal-admin";
-import { formPaths } from "@/lib/forms/paths";
-import type { FormDefinition } from "@/lib/forms/types";
+import { formPath, SLUG_MAX, SLUG_PATTERN, slugify } from "@/lib/forms/paths";
+import { parseDefinition } from "@/lib/forms/schema";
+import { blankDefinition, copyDefinition } from "@/lib/forms/templates";
 
-type Slug = FormDefinition["slug"];
+type Slug = string;
 
 const BASE = "/plataforma/formularios";
 
@@ -22,14 +23,14 @@ function failAt(path: string, message: string): never {
 }
 
 function isSlug(value: string): value is Slug {
-  return value in formPaths;
+  return SLUG_PATTERN.test(value) && value.length <= SLUG_MAX;
 }
 
 function refresh(slug: Slug) {
   revalidatePath(BASE);
   revalidatePath(`${BASE}/${slug}/publicar`);
   revalidatePath(`${BASE}/${slug}/editar`);
-  revalidatePath(formPaths[slug]);
+  revalidatePath(formPath(slug));
 }
 
 const PUBLISH_ERRORS: Record<string, string> = {
@@ -100,4 +101,67 @@ export async function closeCampaign(slug: string, campaignId: string) {
 
   refresh(slug);
   done("Campaña cerrada: ya no recibe postulaciones y el formulario se puede editar de nuevo.");
+}
+
+const CREATE_ERRORS: Record<string, string> = {
+  slug_taken: "Ya existe un formulario con ese nombre de enlace. Elige otro.",
+  invalid_slug: "El enlace solo admite minúsculas, números y guiones (máx. 40).",
+  invalid_title: "Escribe un nombre para el formulario.",
+  invalid_definition: "No se pudo crear la plantilla del formulario.",
+};
+
+/** Crea un formulario nuevo (en blanco o copiando otro) y abre el editor. */
+export async function createForm(formData: FormData) {
+  const { supabase } = await requireAdminOrThrow();
+  const back = `${BASE}/nuevo`;
+
+  const title = String(formData.get("title") ?? "").trim();
+  if (!title) failAt(back, CREATE_ERRORS.invalid_title!);
+  if (title.length > 200) failAt(back, "El nombre es demasiado largo.");
+
+  const slug = slugify(String(formData.get("slug") ?? "") || title);
+  if (!slug || !isSlug(slug)) failAt(back, CREATE_ERRORS.invalid_slug!);
+
+  const from = String(formData.get("from") ?? "blank");
+  let definition = blankDefinition(slug, title);
+  if (from !== "blank") {
+    if (!isSlug(from)) failAt(back, "El formulario de origen no es válido.");
+    const state = await loadFormState(supabase, from);
+    const source = state?.draft ?? state?.latest;
+    if (!source) failAt(back, "No se pudo leer el formulario de origen.");
+    definition = copyDefinition(source, slug, title);
+  }
+
+  // Lo que se guarda pasa siempre por el esquema, igual que cualquier borrador.
+  const parsed = parseDefinition(definition);
+  if (!parsed.ok) failAt(back, `La plantilla no es válida: ${parsed.errors[0]}`);
+
+  const { error } = await supabase.rpc("create_form", {
+    p_slug: slug,
+    p_title: title,
+    p_definition: parsed.definition,
+  });
+  if (error) failAt(back, CREATE_ERRORS[error.message] ?? `No se pudo crear: ${error.message}`);
+
+  revalidatePath(BASE);
+  redirect(`${BASE}/${slug}/editar`);
+}
+
+/** Elimina un formulario que nunca se publicó (los publicados se conservan por su historial). */
+export async function deleteForm(slug: string) {
+  const { supabase } = await requireAdminOrThrow();
+  if (!isSlug(slug)) failAt(BASE, "Formulario no válido.");
+
+  const { error } = await supabase.rpc("delete_form", { p_slug: slug });
+  if (error) {
+    failAt(
+      BASE,
+      error.message === "already_published"
+        ? "Este formulario ya se publicó: se conserva por su historial de respuestas."
+        : `No se pudo eliminar: ${error.message}`,
+    );
+  }
+
+  revalidatePath(BASE);
+  done("Formulario eliminado.");
 }

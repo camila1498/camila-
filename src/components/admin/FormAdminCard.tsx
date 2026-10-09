@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { closeCampaign } from "@/app/plataforma/(panel)/formularios/actions";
+import { closeCampaign, deleteForm } from "@/app/plataforma/(panel)/formularios/actions";
 import { formatLima } from "@/lib/forms/lima";
 import ConfirmDeleteButton from "./ConfirmDeleteButton";
 import styles from "@/app/plataforma/admin.module.css";
@@ -27,6 +27,8 @@ export type FormAdminRow = {
   latestVersion: number | null;
   draftUpdatedAt: string | null;
   draftInvalid: boolean;
+  /** Nunca se publico: se puede eliminar. */
+  deletable: boolean;
 };
 
 function liveText(open: CampaignSummary) {
@@ -132,7 +134,17 @@ export default function FormAdminCard({ row }: { row: FormAdminRow }) {
         <Link href={row.path} className={styles.btnGhost} target="_blank">
           Ver formulario ↗
         </Link>
+        {row.deletable && !open && (
+          <ConfirmDeleteButton
+            action={deleteForm.bind(null, row.slug)}
+            label="Eliminar"
+            message={`¿Eliminar el formulario "${row.title}"? Nunca se publicó, así que no tiene respuestas. Esta acción no se puede deshacer.`}
+          />
+        )}
       </div>
+      <p className={styles.hint}>
+        Enlace público: <code>{row.path}</code>
+      </p>
 
       {row.past.length > 0 && (
         <details className={styles.formDetails}>

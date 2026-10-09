@@ -760,6 +760,23 @@
   white-space: pre-line;
 }
 
+.slugRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #8a7ba3;
+  font-size: 0.9rem;
+}
+.slugRow input {
+  flex: 1;
+}
+.formCard code {
+  background: #f6f4fb;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+}
+
 /* ---------- Login y sin acceso ---------- */
 .login {
   min-height: 100vh;

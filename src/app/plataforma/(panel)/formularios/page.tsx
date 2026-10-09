@@ -2,8 +2,7 @@ import FormAdminCard, { type CampaignSummary, type FormAdminRow } from "@/compon
 import { requireRole } from "@/lib/admin/auth";
 import { loadFormState } from "@/lib/forms/admin";
 import { legalStatus, loadLegal } from "@/lib/forms/legal-admin";
-import { formPaths } from "@/lib/forms/paths";
-import type { FormDefinition } from "@/lib/forms/types";
+import { formPath } from "@/lib/forms/paths";
 import Link from "next/link";
 import styles from "../../admin.module.css";
 
@@ -15,7 +14,14 @@ export default async function FormulariosPage({
   const { ok, error } = await searchParams;
   const { supabase } = await requireRole("admin");
 
-  const slugs = Object.keys(formPaths) as FormDefinition["slug"][];
+  const { data: formRows } = await supabase
+    .from("forms")
+    .select("slug")
+    .order("created_at", { ascending: true })
+    .order("slug", { ascending: true })
+    .overrideTypes<{ slug: string }[], { merge: false }>();
+  const slugs = (formRows ?? []).map((r) => r.slug);
+
   const [states, legalRow] = await Promise.all([
     Promise.all(slugs.map((slug) => loadFormState(supabase, slug))),
     loadLegal(supabase),
@@ -38,12 +44,13 @@ export default async function FormulariosPage({
       return {
         slug,
         title: state?.title ?? slug,
-        path: formPaths[slug],
+        path: formPath(slug),
         open: campaigns.find((c) => c.status === "open") ?? null,
         past: campaigns.filter((c) => c.status !== "open"),
         latestVersion: state?.latestVersion ?? null,
         draftUpdatedAt: state?.draftUpdatedAt ?? null,
         draftInvalid: !state?.draft,
+        deletable: !state?.latestVersion && campaigns.length === 0,
       };
     }),
   );
@@ -55,6 +62,9 @@ export default async function FormulariosPage({
           <h1>Formularios</h1>
           <p>Edita cada formulario, publícalo para abrir una campaña y ciérrala cuando termine la convocatoria.</p>
         </div>
+        <Link href="/plataforma/formularios/nuevo" className={styles.btn}>
+          + Nuevo formulario
+        </Link>
       </div>
 
       {ok && <div className={`${styles.flash} ${styles.ok}`}>{ok}</div>}

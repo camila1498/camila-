@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { requireRole } from "@/lib/admin/auth";
 import { checkPublishable, diffDefinitions, loadFormState } from "@/lib/forms/admin";
 import { legalStatus, loadLegal } from "@/lib/forms/legal-admin";
-import { formPaths } from "@/lib/forms/paths";
+import { formPath, SLUG_MAX, SLUG_PATTERN } from "@/lib/forms/paths";
 import { fieldsOf } from "@/lib/forms/schema";
 import styles from "../../../../admin.module.css";
 import { publishForm } from "../../actions";
@@ -17,7 +17,7 @@ export default async function PublicarPage({
 }) {
   const { slug } = await params;
   const { error } = await searchParams;
-  if (!(slug in formPaths)) notFound();
+  if (!SLUG_PATTERN.test(slug) || slug.length > SLUG_MAX) notFound();
 
   const { supabase } = await requireRole("admin");
   const state = await loadFormState(supabase, slug);
@@ -125,7 +125,7 @@ export default async function PublicarPage({
           )}
           <p className={styles.hint}>
             <Link href={`/plataforma/formularios/${slug}/editar`}>Volver al editor</Link> ·{" "}
-            <Link href={formPaths[slug as keyof typeof formPaths]} target="_blank">
+            <Link href={formPath(slug)} target="_blank">
               Ver la página pública ↗
             </Link>
           </p>

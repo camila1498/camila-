@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdminOrThrow } from "@/lib/admin/auth";
 import { loadFormState } from "@/lib/forms/admin";
-import { formPaths } from "@/lib/forms/paths";
+import { SLUG_MAX, SLUG_PATTERN } from "@/lib/forms/paths";
 import { parseDefinition, validateDefinition } from "@/lib/forms/schema";
 
 export type SaveDraftResult = { ok: true; savedAt: string } | { ok: false; errors: string[] };
@@ -14,7 +14,7 @@ export type SaveDraftResult = { ok: true; savedAt: string } | { ok: false; error
  */
 export async function saveDraft(slug: string, json: string): Promise<SaveDraftResult> {
   const { supabase, user } = await requireAdminOrThrow();
-  if (!(slug in formPaths)) return { ok: false, errors: ["Formulario no válido."] };
+  if (!SLUG_PATTERN.test(slug) || slug.length > SLUG_MAX) return { ok: false, errors: ["Formulario no válido."] };
 
   let input: unknown;
   try {
@@ -50,6 +50,9 @@ export async function saveDraft(slug: string, json: string): Promise<SaveDraftRe
       errors: [error.message === "form_locked" ? "El formulario está publicado: no admite cambios." : `No se pudo guardar: ${error.message}`],
     };
   }
+
+  // El nombre interno (lista de la plataforma y titulo de "pronto"/"cerrado") sigue al titulo del formulario.
+  await supabase.from("forms").update({ title: parsed.definition.title }).eq("slug", slug);
 
   revalidatePath("/plataforma/formularios");
   revalidatePath(`/plataforma/formularios/${slug}/publicar`);

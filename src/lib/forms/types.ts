@@ -43,7 +43,7 @@ export type Section = { title?: string; description?: string; fields: Field[] };
 
 export type FormDefinition = {
   schemaVersion?: 1;
-  slug: "voluntariado" | "aliados" | "emplealab" | "createwomen" | "bootcamp";
+  slug: string;
   /** Subir al cambiar preguntas: se guarda con cada respuesta para exportar con las etiquetas correctas. */
   version: number;
   title: string;
