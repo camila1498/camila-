@@ -5,7 +5,11 @@ import About from "@/components/home/About";
 import Allies from "@/components/home/Allies";
 import ImpactStats from "@/components/home/ImpactStats";
 import Testimonials from "@/components/home/Testimonials";
+import Campaigns from "@/components/home/Campaigns";
 import Contact from "@/components/home/Contact";
+
+/** Las cifras publicadas se refrescan solas cada 5 minutos (y al instante cuando se publican). */
+export const revalidate = 300;
 
 export default function HomePage() {
   return (
@@ -15,6 +19,7 @@ export default function HomePage() {
       <About />
       <Allies />
       <ImpactStats />
+      <Campaigns />
       <Testimonials />
       <Contact />
       <Footer />
