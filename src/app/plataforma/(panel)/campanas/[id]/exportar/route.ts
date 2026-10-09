@@ -8,9 +8,12 @@ export const dynamic = "force-dynamic";
 const CHUNK = 1000;
 const MAX_ROWS = 50000;
 
-type DbRow = Omit<ExportRow, "sensitive"> & {
-  submission_sensitive: { data: Record<string, unknown> } | { data: Record<string, unknown> }[] | null;
+type One<T> = T | T[] | null;
+type DbRow = Omit<ExportRow, "sensitive" | "consent"> & {
+  submission_sensitive: One<{ data: Record<string, unknown> }>;
+  guardian_consents: One<NonNullable<ExportRow["consent"]>>;
 };
+const first = <T,>(v: One<T>): T | null => (Array.isArray(v) ? (v[0] ?? null) : v);
 
 /** Descarga CSV de una campaña: completo (con datos personales) o anonimizado. Solo administradores. */
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -34,7 +37,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   // El modo anonimizado ni siquiera trae los datos sensibles desde la base.
   const select =
     "full_name,email,status,is_minor,consent_marketing,notes,created_at,answers" +
-    (mode === "completo" ? ",submission_sensitive(data)" : "");
+    (mode === "completo"
+      ? ",submission_sensitive(data),guardian_consents(guardian_name,relationship,data_consent,image_consent,responded_at,revoked_at)"
+      : "");
 
   const rows: ExportRow[] = [];
   for (let from = 0; from < MAX_ROWS; from += CHUNK) {
@@ -49,8 +54,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       .overrideTypes<DbRow[], { merge: false }>();
     if (error) return new Response(`No se pudo exportar: ${error.message}`, { status: 500 });
     for (const r of data ?? []) {
-      const s = Array.isArray(r.submission_sensitive) ? r.submission_sensitive[0] : r.submission_sensitive;
-      rows.push({ ...r, sensitive: s?.data ?? {} });
+      const { submission_sensitive, guardian_consents, ...rest } = r;
+      rows.push({ ...rest, sensitive: first(submission_sensitive)?.data ?? {}, consent: first(guardian_consents) });
     }
     if ((data?.length ?? 0) < CHUNK) break;
   }

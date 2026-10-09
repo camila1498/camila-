@@ -1,4 +1,6 @@
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import GuardianConsentPanel from "@/components/admin/GuardianConsentPanel";
 import SelectionPanel from "@/components/admin/SelectionPanel";
 import SubmissionReview from "@/components/admin/SubmissionReview";
 import { requireRole } from "@/lib/admin/auth";
@@ -7,9 +9,10 @@ import { cleanSearch, loadCampaign, loadCampaignDefinition, UUID } from "@/lib/f
 import { toWhatsAppNumber } from "@/lib/messaging/phone";
 import { firstName, renderTemplate, templateForStatus } from "@/lib/messaging/templates";
 import { whatsappUrl } from "@/lib/messaging/whatsapp";
+import { consentStatus, loadConsent } from "@/lib/consent/consent";
 import { discardReasons } from "@/lib/selection/bootcamp";
 import { ageRangeOf, loadReviewerNames, supportsScoring, toApplicant } from "@/lib/selection/load";
-import { gradeSubmission, reviewSubmission, saveNotes, setEquipmentSolved } from "../../actions";
+import { gradeSubmission, requestConsent, resetConsent, reviewSubmission, revokeConsent, saveNotes, setEquipmentSolved } from "../../actions";
 
 type Submission = {
   id: string;
@@ -86,7 +89,7 @@ export default async function PostulacionPage({
   if (menores) idsQuery = idsQuery.eq("is_minor", true);
   if (q) idsQuery = idsQuery.or(`full_name.ilike.%${q}%,email.ilike.%${q}%`);
 
-  const [def, sensitiveRes, eventsRes, templatesRes, idsRes] = await Promise.all([
+  const [def, sensitiveRes, eventsRes, templatesRes, idsRes, consent] = await Promise.all([
     loadCampaignDefinition(supabase, campaign),
     supabase
       .from("submission_sensitive")
@@ -106,6 +109,7 @@ export default async function PostulacionPage({
       .select("key,body")
       .overrideTypes<{ key: string; body: string }[], { merge: false }>(),
     idsQuery.overrideTypes<{ id: string }[], { merge: false }>(),
+    loadConsent(supabase, submissionId),
   ]);
 
   const events = eventsRes.data ?? [];
@@ -121,6 +125,7 @@ export default async function PostulacionPage({
     : [];
   const authorName = (uid: string | null) => {
     const m = authors.find((a) => a.user_id === uid);
+    if (!uid) return "Tutor (por enlace)";
     return m ? (m.full_name ?? m.email) : "Alguien del equipo";
   };
 
@@ -147,6 +152,7 @@ export default async function PostulacionPage({
     nombre_completo: sub.full_name,
     formulario: def?.title ?? campaign.form_title,
     campana: campaign.name,
+    enlace_consentimiento: "",
   };
   const message = templateBody ? renderTemplate(templateBody, vars) : null;
   const guardianMessage = message
@@ -193,6 +199,40 @@ export default async function PostulacionPage({
     );
   }
 
+  // Consentimiento del tutor (solo menores): enlace personal y mensaje de WhatsApp.
+  let consentPanel: React.ReactNode = null;
+  if (sub.is_minor) {
+    const h = await headers();
+    const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
+    const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+    const status = consentStatus(consent);
+    const link = consent && status === "pending" ? `${proto}://${host}/consentimiento/${consent.token}` : null;
+    const consentBody = templatesRes.data?.find((t) => t.key === "guardian_consent")?.body;
+    const consentMessage = consentBody && link ? renderTemplate(consentBody, { ...vars, enlace_consentimiento: link }) : null;
+    consentPanel = (
+      <GuardianConsentPanel
+        submissionId={submissionId}
+        status={status}
+        record={consent}
+        link={link}
+        whatsapp={
+          link
+            ? {
+                url: consentMessage && guardianNumber?.digits ? whatsappUrl(guardianNumber.digits, consentMessage) : null,
+                to: guardianNumber?.digits ?? null,
+                guardianName,
+              }
+            : null
+        }
+        locked={campaign.status === "archived"}
+        qs={qs}
+        requestAction={requestConsent.bind(null, id, submissionId)}
+        resetAction={resetConsent.bind(null, id, submissionId)}
+        revokeAction={revokeConsent.bind(null, id, submissionId)}
+      />
+    );
+  }
+
   const reviewAction = reviewSubmission.bind(null, id, submissionId);
   const notesAction = saveNotes.bind(null, id, submissionId);
 
@@ -211,7 +251,12 @@ export default async function PostulacionPage({
       events={events.map((e) => ({ ...e, authorName: authorName(e.created_by) }))}
       position={{ prevId, nextId, index: at, total: ids.length }}
       whatsapp={{ template: templateKey ?? null, firstName: vars.nombre, message, personUrl, guardianUrl }}
-      extra={scoring}
+      extra={
+        <>
+          {consentPanel}
+          {scoring}
+        </>
+      }
       reviewAction={reviewAction}
       notesAction={notesAction}
     />

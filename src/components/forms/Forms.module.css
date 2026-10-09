@@ -184,3 +184,22 @@
     gap: 8px;
   }
 }
+
+/* ---------- Consentimiento del tutor ---------- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.submitSecondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 26px;
+  border: 1.5px solid rgba(91, 27, 210, 0.3);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--violeta-deep);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}

@@ -4,6 +4,7 @@ export const TEMPLATE_VARIABLES = [
   { name: "nombre_completo", help: "Nombre y apellidos" },
   { name: "formulario", help: "Nombre del formulario" },
   { name: "campana", help: "Nombre de la campaña (p. ej. Bootcamp 2026)" },
+  { name: "enlace_consentimiento", help: "Enlace personal del consentimiento del tutor (solo menores)" },
 ] as const;
 
 export type TemplateVars = Record<(typeof TEMPLATE_VARIABLES)[number]["name"], string>;

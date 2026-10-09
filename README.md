@@ -37,7 +37,8 @@ Sin las variables de entorno, `/oportunidades` muestra un aviso en vez del lista
    `20261012000000_reviews.sql` (historial de postulaciones y plantillas de mensajes) y
    `20261013000000_campaign_stats.sql` (cierre de campaña, cifras públicas y registro de descargas) y
    `20261014000000_retention.sql` (archivado y vencimiento de datos personales) y
-   `20261015000000_selection.sql` (calificaciones, segunda revisión y aplicación de la selección).
+   `20261015000000_selection.sql` (calificaciones, segunda revisión y aplicación de la selección) y
+   `20261016000000_guardian_consent.sql` (consentimiento de madre, padre o tutor).
 
 ## Plataforma (`/plataforma`)
 
@@ -180,6 +181,26 @@ postulación aparece el panel **Puntaje del Bootcamp** y en la campaña, **Selec
   recalcula con los datos actuales, **no pisa decisiones ya tomadas** y cada cambio queda en el historial con la nota
   «Selección por puntaje».
 
+## Consentimiento del tutor (menores de 18)
+
+Para toda postulante menor de edad (PDF §7), su madre, padre o tutor debe autorizarla **él mismo**: no basta con que la menor marque
+una casilla. En la ficha de la postulación aparece el panel **Consentimiento del tutor**:
+
+1. **Generar enlace** (al aprobarla): crea un enlace personal e imposible de adivinar (`/consentimiento/<token>`), válido 60 días
+   (se puede renovar). **Enviar el enlace al tutor** abre WhatsApp con el mensaje editable de *Mensajes → Consentimiento del tutor*
+   (debe conservar `{{enlace_consentimiento}}`), al número que la menor dio en el formulario.
+2. El tutor abre el enlace (sin cuenta), ve el aviso de privacidad, escribe su nombre y parentesco, y elige **Autorizo** o **No autorizo**
+   la participación; el **uso de imagen** es una decisión aparte (autorizar una y no la otra es válido).
+3. Se guarda quién respondió, cuándo y el **texto exacto que aceptó** (armado en el servidor con los datos de la base). Una respuesta no se
+   puede modificar: para repetirla hay que **reiniciar**, y queda en el historial. Si el tutor retira su autorización, se **registra la
+   revocación** (también cuenta como retirada la imagen).
+4. **Sin consentimiento vigente no se puede confirmar la vacante**: lo exige la base de datos, no solo la pantalla. El botón **Confirmar
+   vacante** aparece en las postulaciones aprobadas.
+
+La tabla de respuestas muestra el estado junto a «Menor» (sin enviar, pendiente, autorizó, no autorizó, revocado) y la exportación
+completa incluye tres columnas de consentimiento. Los consentimientos se eliminan junto con los datos de la participante (al anonimizarla
+o eliminarla). Si Legal decide pedir el consentimiento solo a menores de 14, bastará cambiar la regla en `set_submission_status`.
+
 ## Archivado y vencimientos
 
 Al terminar el proceso, en **«Cierre y exportación» → Archivar** se indica cuándo terminó el programa. Requiere haber
@@ -243,4 +264,4 @@ admin; si la posición ya la tiene otra beca, las dos intercambian.
 
 - **Supabase para el resto del contenido** (equipo, programas, testimonios), hoy en `src/data/`.
 - **Exportación a Excel** (`.xlsx`), además del CSV.
-- **Consentimiento del tutor** para menores (enlace por postulante), correo de confirmación y contador de cupos del Bootcamp.
+- **Correo** de confirmación al enviar el formulario y de resultado (requiere dominio verificado y un proveedor de envío), y contador de cupos del Bootcamp.
