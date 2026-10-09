@@ -9,7 +9,7 @@ export function evaluate(condition: Condition | undefined, answers: Answers): bo
 }
 
 export function isVisible(field: Field, answers: Answers) {
-  return evaluate(field.showIf, answers);
+  return !field.hidden && evaluate(field.showIf, answers);
 }
 
 export function isRequired(field: Field, answers: Answers) {

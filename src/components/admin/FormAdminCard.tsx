@@ -1,146 +1,152 @@
 import Link from "next/link";
-import { saveForm, setFormStatus } from "@/app/plataforma/(panel)/formularios/actions";
-import { formatLima, toLimaInput } from "@/lib/forms/lima";
-import type { Availability } from "@/lib/forms/status";
+import { closeCampaign } from "@/app/plataforma/(panel)/formularios/actions";
+import { formatLima } from "@/lib/forms/lima";
+import ConfirmDeleteButton from "./ConfirmDeleteButton";
 import styles from "@/app/plataforma/admin.module.css";
+
+export type CampaignSummary = {
+  id: string;
+  name: string;
+  version: number;
+  status: "open" | "closed" | "archived";
+  opens_at: string | null;
+  closes_at: string | null;
+  capacity: number | null;
+  closed_at: string | null;
+  submissions: number;
+};
 
 export type FormAdminRow = {
   slug: string;
   title: string;
   path: string;
-  status: "draft" | "open" | "closed";
-  opens_at: string | null;
-  closes_at: string | null;
-  capacity: number | null;
-  submissions: number;
-  availability: Availability;
-  /** Datos que faltan para poder recibir envios (RUC, domicilio, …). */
-  missing: string[];
+  /** Borrador = sin campaña abierta. */
+  open: CampaignSummary | null;
+  /** Campañas anteriores, de la mas reciente a la mas antigua. */
+  past: CampaignSummary[];
+  latestVersion: number | null;
+  draftUpdatedAt: string | null;
+  draftInvalid: boolean;
 };
 
-const statusLabel = { draft: "Borrador", open: "Abierto", closed: "Cerrado" } as const;
-
-function availabilityText(row: FormAdminRow) {
-  if (row.availability === "open") return { text: "Recibiendo postulaciones", on: true };
-  if (row.status === "open" && row.missing.length > 0) {
-    return { text: `Marcado como abierto, pero no recibe envíos: faltan ${row.missing.join(", ")}`, on: false };
+function liveText(open: CampaignSummary) {
+  const now = Date.now();
+  if (open.opens_at && now < Date.parse(open.opens_at)) {
+    return { text: `Publicado: abre el ${formatLima(open.opens_at)}`, on: false };
   }
-  if (row.status === "open" && row.opens_at && Date.parse(row.opens_at) > Date.now()) {
-    return { text: `Abre el ${formatLima(row.opens_at)}`, on: false };
+  if (open.closes_at && now > Date.parse(open.closes_at)) {
+    return { text: "Publicado: la fecha de cierre ya pasó (ciérralo para poder editarlo)", on: false };
   }
-  if (row.status === "open") return { text: "Cerrado por fecha", on: false };
-  if (row.status === "closed") return { text: "No recibe postulaciones", on: false };
-  return { text: "Aún no publicado", on: false };
+  return { text: "Recibiendo postulaciones", on: true };
 }
 
 export default function FormAdminCard({ row }: { row: FormAdminRow }) {
-  const info = availabilityText(row);
+  const open = row.open;
+  const live = open ? liveText(open) : null;
 
   return (
     <article className={styles.formCard}>
       <div className={styles.formCardHead}>
         <div>
           <h2>{row.title}</h2>
-          <p className={info.on ? styles.liveOn : styles.liveOff}>
+          <p className={live?.on ? styles.liveOn : styles.liveOff}>
             <span className={styles.liveDot} aria-hidden="true" />
-            {info.text}
+            {live
+              ? live.text
+              : row.past.length > 0
+                ? "Sin campaña abierta · editable"
+                : "Aún no publicado · editable"}
           </p>
         </div>
-        <span
-          className={`${styles.pill} ${styles.pillStatic} ${row.status === "open" ? styles.pillOn : styles.pillOff}`}
-        >
-          {statusLabel[row.status]}
+        <span className={`${styles.pill} ${styles.pillStatic} ${open ? styles.pillOn : styles.pillOff}`}>
+          {open ? "Publicado" : "Borrador"}
         </span>
       </div>
 
-      <dl className={styles.formMeta}>
-        <div>
-          <dt>Respuestas</dt>
-          <dd>{row.submissions}</dd>
-        </div>
-        <div>
-          <dt>Apertura</dt>
-          <dd>{formatLima(row.opens_at)}</dd>
-        </div>
-        <div>
-          <dt>Cierre</dt>
-          <dd>{formatLima(row.closes_at)}</dd>
-        </div>
-        <div>
-          <dt>Cupos</dt>
-          <dd>{row.capacity ?? "—"}</dd>
-        </div>
-      </dl>
+      {open ? (
+        <dl className={styles.formMeta}>
+          <div>
+            <dt>Campaña</dt>
+            <dd>{open.name}</dd>
+          </div>
+          <div>
+            <dt>Respuestas</dt>
+            <dd>{open.submissions}</dd>
+          </div>
+          <div>
+            <dt>Apertura</dt>
+            <dd>{formatLima(open.opens_at)}</dd>
+          </div>
+          <div>
+            <dt>Cierre</dt>
+            <dd>{formatLima(open.closes_at)}</dd>
+          </div>
+          <div>
+            <dt>Cupos</dt>
+            <dd>{open.capacity ?? "—"}</dd>
+          </div>
+        </dl>
+      ) : (
+        <dl className={styles.formMeta}>
+          <div>
+            <dt>Última versión publicada</dt>
+            <dd>{row.latestVersion ? `v${row.latestVersion}` : "—"}</dd>
+          </div>
+          <div>
+            <dt>Borrador editado</dt>
+            <dd>{formatLima(row.draftUpdatedAt)}</dd>
+          </div>
+          <div>
+            <dt>Campañas anteriores</dt>
+            <dd>{row.past.length}</dd>
+          </div>
+        </dl>
+      )}
+
+      {row.draftInvalid && (
+        <p className={styles.liveOff} role="alert">
+          El borrador está dañado y no se puede publicar. Ábrelo en el editor para corregirlo.
+        </p>
+      )}
 
       <div className={styles.formActions}>
-        {row.status !== "open" ? (
-          <form action={setFormStatus.bind(null, row.slug, "open")}>
-            <button type="submit" className={styles.btn}>
-              Abrir postulaciones
-            </button>
-          </form>
+        {open ? (
+          <>
+            <ConfirmDeleteButton
+              action={closeCampaign.bind(null, row.slug, open.id)}
+              label="Cerrar campaña"
+              message={`¿Cerrar "${open.name}"? Dejará de recibir postulaciones (${open.submissions} recibidas). El formulario se podrá editar de nuevo.`}
+            />
+            <span className={styles.hint}>Publicado: no se puede editar mientras reciba postulaciones.</span>
+          </>
         ) : (
-          <form action={setFormStatus.bind(null, row.slug, "closed")}>
-            <button type="submit" className={styles.btnDanger}>
-              Cerrar postulaciones
-            </button>
-          </form>
+          <>
+            <Link href={`/plataforma/formularios/${row.slug}/editar`} className={styles.btnGhost}>
+              Editar formulario
+            </Link>
+            <Link href={`/plataforma/formularios/${row.slug}/publicar`} className={styles.btn}>
+              Publicar…
+            </Link>
+          </>
         )}
         <Link href={row.path} className={styles.btnGhost} target="_blank">
           Ver formulario ↗
         </Link>
       </div>
 
-      <details className={styles.formDetails}>
-        <summary>Fechas, cupos y estado</summary>
-        <form action={saveForm.bind(null, row.slug)} className={styles.formGrid}>
-          <div className={styles.field}>
-            <label htmlFor={`status-${row.slug}`}>Estado</label>
-            <select id={`status-${row.slug}`} name="status" defaultValue={row.status}>
-              <option value="draft">Borrador (no visible)</option>
-              <option value="open">Abierto</option>
-              <option value="closed">Cerrado</option>
-            </select>
-          </div>
-          <div className={styles.field}>
-            <label htmlFor={`cap-${row.slug}`}>Cupos (opcional)</label>
-            <input
-              id={`cap-${row.slug}`}
-              name="capacity"
-              type="number"
-              min={1}
-              step={1}
-              defaultValue={row.capacity ?? ""}
-            />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor={`opens-${row.slug}`}>Abre el (hora de Lima)</label>
-            <input
-              id={`opens-${row.slug}`}
-              name="opens_at"
-              type="datetime-local"
-              defaultValue={toLimaInput(row.opens_at)}
-            />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor={`closes-${row.slug}`}>Cierra el (hora de Lima)</label>
-            <input
-              id={`closes-${row.slug}`}
-              name="closes_at"
-              type="datetime-local"
-              defaultValue={toLimaInput(row.closes_at)}
-            />
-          </div>
-          <div className={`${styles.actions}`}>
-            <button type="submit" className={styles.btn}>
-              Guardar
-            </button>
-            <span className={styles.hint}>
-              Con fechas, el formulario se abre y se cierra solo en ese rango.
-            </span>
-          </div>
-        </form>
-      </details>
+      {row.past.length > 0 && (
+        <details className={styles.formDetails}>
+          <summary>Campañas anteriores ({row.past.length})</summary>
+          <ul className={styles.pastList}>
+            {row.past.map((c) => (
+              <li key={c.id}>
+                <strong>{c.name}</strong> · v{c.version} · {c.submissions} respuestas
+                {c.capacity ? ` · ${c.capacity} cupos` : ""} · cerrada {formatLima(c.closed_at)}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </article>
   );
 }

@@ -31,12 +31,13 @@ Sin las variables de entorno, `/oportunidades` muestra un aviso en vez del lista
    - **Sin CLI**: pega `supabase/migrations/*.sql` y luego `supabase/seed.sql` en el SQL Editor.
 4. Aplica también las migraciones `20261006000000_becas_rank.sql` (reordenar el ranking) y
    `20261007000000_members.sql` (miembros con rol; reemplaza a la tabla `admins`) y
-   `20261009000000_forms.sql` (formularios propios y sus respuestas).
+   `20261009000000_forms.sql` (formularios propios y sus respuestas) y
+   `20261010000000_campaigns.sql` (campañas, versiones editables y configuración legal).
 
 ## Plataforma (`/plataforma`)
 
 Vista administrativa con sidebar: dashboard, becas (crear, editar, eliminar, ocultar/publicar,
-rankear), formularios (abrir/cerrar postulaciones) y miembros. Aquí irán también los inscritos en bootcamps, visitantes y demás.
+rankear), formularios (editar, publicar y cerrar campañas), miembros y configuración legal. Aquí irán también los inscritos en bootcamps, visitantes y demás.
 
 **Acceso**: se ingresa con Google desde el botón "Ingresar" de la landing (o `/plataforma/login`).
 Solo entran los correos registrados en la tabla `members`; el resto se desconecta de inmediato.
@@ -66,36 +67,44 @@ Antes de su primer ingreso, regístralo en el SQL Editor (los siguientes se agre
 Quien aún no esté registrado puede crear una cuenta de Google en Supabase al intentar entrar,
 pero no obtiene ningún acceso: se desconecta y no puede leer ni escribir datos.
 
-## Formularios
+## Formularios y campañas
 
 Cinco formularios propios (voluntariado, aliados, mentee de EmpleaLab, mentee de CreateWomen y
 postulación al Bootcamp 2026) reemplazan a los Google Forms. Vienen del documento *Formularios
-CreateLatam 2026* y se definen en código en `src/lib/forms/definitions/` (preguntas, condicionales
-y plazos de conservación); el mismo archivo genera el formulario y su validación. Al cambiar
-preguntas, sube `version` de esa definición.
+CreateLatam 2026*. **Se editan y se publican desde `/plataforma/formularios`**, sin tocar código.
 
-| Ruta | Formulario |
+| Ruta pública | Formulario |
 |---|---|
 | `/unete/voluntariado`, `/unete/aliados` | Voluntariado y Aliados (los dos CTAs de Únete) |
 | `/programas/emplealab/postular`, `/programas/createwomen/postular` | Mentees |
 | `/bootcamp/postular` | Postulación al Bootcamp 2026 |
 
-**Nacen cerrados.** Cada formulario tiene un estado en la tabla `forms` (`draft`, `open`, `closed`,
-con fechas opcionales). Mientras no se abra, la página muestra "abrirá pronto" (y, si existía, el
-Google Form anterior como respaldo). Además, aunque esté `open`, **no recibe envíos mientras falten
-datos legales o del programa**: las variables de entorno `LEGAL_RUC`, `LEGAL_ADDRESS`,
-`LEGAL_PRIVACY_EMAIL` y `BOOTCAMP_SCHEDULE` (solo servidor; en Vercel y en `.env.local`). El rango de
-edad y las fechas están en `src/lib/forms/config.ts`. El aviso de privacidad es un borrador pendiente de aprobación de Legal.
+**Editar (solo antes de publicar).** El editor modifica un *borrador*: título, texto introductorio,
+botón, plazo de conservación y, por pregunta, texto, ayuda, obligatoriedad, opciones, límites, orden,
+visibilidad y condiciones; también se pueden agregar preguntas. Las preguntas *base* (nombre, correo,
+teléfono, país, consentimiento, edad y datos del tutor) no se quitan ni cambian de tipo, y las que
+alimentan el puntaje tienen opciones fijas. Una pregunta ya publicada no se borra: se oculta, para
+no perder el historial. La vista previa del editor es la misma que verá la persona.
 
-**Abrir y cerrar desde la plataforma**: en `/plataforma/formularios` cada formulario tiene un botón
-"Abrir postulaciones" / "Cerrar postulaciones", y opcionalmente una ventana de fechas (hora de Lima) y
-cupos: con fechas se abre y se cierra solo. La plataforma no deja abrir un formulario mientras falten
-datos legales. Las respuestas se pueden contar ahí; la vista de respuestas y la exportación vienen después.
+**Publicar = abrir una campaña.** "Publicar…" muestra una alerta de revisión (resumen, cambios desde
+la versión anterior, requisitos) y exige confirmar. Al publicar, el borrador se congela como una
+*versión* inmutable y se abre una *campaña* (una edición: "Bootcamp 2026") con su ventana de fechas
+(hora de Lima) y cupos. **Mientras la campaña está abierta, el formulario no admite cambios** (lo
+impiden la interfaz, el servidor y la base de datos). Para corregir algo hay que *cerrar la campaña*,
+editar y volver a publicar: la nueva campaña usa la versión nueva y las respuestas anteriores
+conservan la suya. Cada correo puede postular una vez **por campaña**.
+
+**Requisitos para publicar y recibir envíos** (también los exige la base de datos): datos legales
+completos y **aprobados por Legal** en `/plataforma/configuracion` (RUC, domicilio, correo de
+privacidad; cambiar un dato retira la aprobación) y ningún marcador pendiente tipo `[horario]` o
+`[●]` en los textos. El aviso de privacidad es un borrador pendiente de aprobación de Legal.
+
+Las respuestas las guarda la función `submit_form` (valida que haya campaña abierta, que Legal haya
+aprobado y rechaza duplicados); solo los admins pueden leerlas. Lo que pueda traer datos de salud
+(B13) va en una tabla aparte. Las definiciones viven en la base de datos (`form_drafts`,
+`form_versions`, `campaigns`); la versión 1 sale de `supabase/migrations/20261010000000_campaigns.sql`.
 
 Compilar mientras corre `npm run dev`: `NEXT_DIST_DIR=.next-build npm run build` (usa otra carpeta de salida).
-
-Las respuestas las guarda la función `submit_form` (valida que esté abierto y rechaza duplicados);
-solo los admins pueden leerlas. Lo que pueda traer datos de salud (B13) va en una tabla aparte.
 
 ## Estructura del sitio
 

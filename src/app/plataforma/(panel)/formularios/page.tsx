@@ -1,19 +1,11 @@
-import FormAdminCard, { type FormAdminRow } from "@/components/admin/FormAdminCard";
+import FormAdminCard, { type CampaignSummary, type FormAdminRow } from "@/components/admin/FormAdminCard";
 import { requireRole } from "@/lib/admin/auth";
-import { missingConfig } from "@/lib/forms/config";
-import { formDefinitions } from "@/lib/forms/definitions";
+import { loadFormState } from "@/lib/forms/admin";
+import { legalStatus, loadLegal } from "@/lib/forms/legal-admin";
 import { formPaths } from "@/lib/forms/paths";
-import { computeAvailability } from "@/lib/forms/status";
 import type { FormDefinition } from "@/lib/forms/types";
+import Link from "next/link";
 import styles from "../../admin.module.css";
-
-type FormRow = {
-  slug: FormDefinition["slug"];
-  status: "draft" | "open" | "closed";
-  opens_at: string | null;
-  closes_at: string | null;
-  capacity: number | null;
-};
 
 export default async function FormulariosPage({
   searchParams,
@@ -23,62 +15,54 @@ export default async function FormulariosPage({
   const { ok, error } = await searchParams;
   const { supabase } = await requireRole("admin");
 
-  const { data, error: loadError } = await supabase
-    .from("forms")
-    .select("slug,status,opens_at,closes_at,capacity")
-    .overrideTypes<FormRow[], { merge: false }>();
+  const slugs = Object.keys(formPaths) as FormDefinition["slug"][];
+  const [states, legalRow] = await Promise.all([
+    Promise.all(slugs.map((slug) => loadFormState(supabase, slug))),
+    loadLegal(supabase),
+  ]);
+  const legal = legalStatus(legalRow);
 
-  const counts = await Promise.all(
-    Object.keys(formDefinitions).map(async (slug) => {
-      const { count } = await supabase
-        .from("submissions")
-        .select("id", { count: "exact", head: true })
-        .eq("form_slug", slug)
-        .is("archived_at", null);
-      return [slug, count ?? 0] as const;
+  const rows: FormAdminRow[] = await Promise.all(
+    states.map(async (state, i) => {
+      const slug = slugs[i]!;
+      const campaigns: CampaignSummary[] = await Promise.all(
+        (state?.campaigns ?? []).map(async (c) => {
+          const { count } = await supabase
+            .from("submissions")
+            .select("id", { count: "exact", head: true })
+            .eq("campaign_id", c.id)
+            .is("archived_at", null);
+          return { ...c, submissions: count ?? 0 };
+        }),
+      );
+      return {
+        slug,
+        title: state?.title ?? slug,
+        path: formPaths[slug],
+        open: campaigns.find((c) => c.status === "open") ?? null,
+        past: campaigns.filter((c) => c.status !== "open"),
+        latestVersion: state?.latestVersion ?? null,
+        draftUpdatedAt: state?.draftUpdatedAt ?? null,
+        draftInvalid: !state?.draft,
+      };
     }),
   );
-  const submissions = Object.fromEntries(counts);
-
-  const rows: FormAdminRow[] = (Object.keys(formDefinitions) as FormDefinition["slug"][]).map((slug) => {
-    const row = data?.find((r) => r.slug === slug) ?? null;
-    const missing = missingConfig(slug);
-    return {
-      slug,
-      title: formDefinitions[slug].title,
-      path: formPaths[slug],
-      status: row?.status ?? "draft",
-      opens_at: row?.opens_at ?? null,
-      closes_at: row?.closes_at ?? null,
-      capacity: row?.capacity ?? null,
-      submissions: submissions[slug] ?? 0,
-      availability: computeAvailability(row, missing),
-      missing,
-    };
-  });
-
-  const pending = [...new Set(rows.flatMap((r) => r.missing))];
 
   return (
     <>
       <div className={styles.head}>
         <div>
           <h1>Formularios</h1>
-          <p>Abre y cierra las postulaciones cuando empiece cada convocatoria.</p>
+          <p>Edita cada formulario, publícalo para abrir una campaña y ciérrala cuando termine la convocatoria.</p>
         </div>
       </div>
 
       {ok && <div className={`${styles.flash} ${styles.ok}`}>{ok}</div>}
-      {(error || loadError) && (
-        <div className={`${styles.flash} ${styles.error}`}>
-          {error ?? `No se pudieron cargar los formularios: ${loadError?.message}`}
-        </div>
-      )}
-      {pending.length > 0 && (
+      {error && <div className={`${styles.flash} ${styles.error}`}>{error}</div>}
+      {!legal.ready && (
         <div className={`${styles.flash} ${styles.warn}`}>
-          <strong>Aún no se pueden abrir.</strong> Faltan datos: {pending.join(", ")}. Los completa
-          Legal en las variables de entorno del proyecto (LEGAL_RUC, LEGAL_ADDRESS,
-          LEGAL_PRIVACY_EMAIL, BOOTCAMP_SCHEDULE); hasta entonces ningún formulario recibe envíos.
+          <strong>Aún no se puede publicar ningún formulario.</strong> {legal.message}{" "}
+          <Link href="/plataforma/configuracion">Ir a Configuración →</Link>
         </div>
       )}
 

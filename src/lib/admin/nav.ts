@@ -3,7 +3,7 @@ import type { Role } from "./auth";
 export type NavItem = {
   href: string;
   label: string;
-  icon: "dashboard" | "becas" | "members" | "bootcamps" | "visitors" | "forms";
+  icon: "dashboard" | "becas" | "members" | "bootcamps" | "visitors" | "forms" | "settings";
   /** Roles que ven el item. Para sumar vistas de equipo/estudiantes basta ampliar esta lista. */
   roles: Role[];
   /** Vistas planeadas que aun no existen: se muestran deshabilitadas. */
@@ -31,7 +31,10 @@ export const navSections: NavSection[] = [
   },
   {
     title: "Administración",
-    items: [{ href: "/plataforma/miembros", label: "Miembros", icon: "members", roles: ["admin"] }],
+    items: [
+      { href: "/plataforma/miembros", label: "Miembros", icon: "members", roles: ["admin"] },
+      { href: "/plataforma/configuracion", label: "Configuración", icon: "settings", roles: ["admin"] },
+    ],
   },
 ];
 

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
-import { getFormDefinition } from "@/lib/forms/definitions";
-import { getAvailability } from "@/lib/forms/status";
+import { legacyFormUrls } from "@/lib/forms/legacy";
+import { getLegalInfo, getPublicForm } from "@/lib/forms/store";
 import FormRenderer from "./FormRenderer";
 import PrivacyNotice from "./PrivacyNotice";
 import styles from "./Forms.module.css";
@@ -14,10 +14,11 @@ type FormPageProps = {
 };
 
 export default async function FormPage({ slug, trail }: FormPageProps) {
-  const def = getFormDefinition(slug);
-  if (!def) throw new Error(`Formulario desconocido: ${slug}`);
-
-  const { availability } = await getAvailability(def.slug);
+  const form = await getPublicForm(slug);
+  const legal = form?.state === "open" ? await getLegalInfo() : null;
+  const state = form?.state === "open" && legal ? "open" : (form?.state ?? "soon");
+  const title = form?.title ?? "Formulario";
+  const openForm = form?.state === "open" && legal ? form : null;
 
   return (
     <>
@@ -33,31 +34,37 @@ export default async function FormPage({ slug, trail }: FormPageProps) {
               </span>
             ))}
             {" / "}
-            {def.title}
+            {openForm?.definition.title ?? title}
           </p>
-          <h1>{def.title}</h1>
+          <h1>{openForm?.definition.title ?? title}</h1>
         </div>
       </section>
 
       <div className={styles.wrap}>
-        {availability === "open" ? (
+        {openForm && legal ? (
           <>
-            <p className={styles.intro}>{def.intro}</p>
+            {openForm.definition.intro && <p className={styles.intro}>{openForm.definition.intro}</p>}
             <FormRenderer
-              definition={def}
-              privacy={<PrivacyNotice title={def.title} retention={def.retention} />}
+              definition={openForm.definition}
+              privacy={
+                <PrivacyNotice
+                  title={openForm.definition.title}
+                  retention={openForm.definition.retention}
+                  legal={legal}
+                />
+              }
             />
           </>
         ) : (
           <div className={styles.notice}>
-            <h2>{availability === "closed" ? "Postulaciones cerradas" : "Este formulario abrirá pronto"}</h2>
+            <h2>{state === "closed" ? "Postulaciones cerradas" : "Este formulario abrirá pronto"}</h2>
             <p>
-              {availability === "closed"
+              {state === "closed"
                 ? "Por ahora no estamos recibiendo respuestas en este formulario. Síguenos para enterarte de la próxima convocatoria."
                 : "Estamos terminando de preparar este formulario. Vuelve en unos días."}
             </p>
-            {def.legacyUrl && availability === "soon" && (
-              <a href={def.legacyUrl} target="_blank" rel="noreferrer" className="btn-primary">
+            {legacyFormUrls[slug] && state === "soon" && (
+              <a href={legacyFormUrls[slug]} target="_blank" rel="noreferrer" className="btn-primary">
                 Mientras tanto, postula aquí →
               </a>
             )}

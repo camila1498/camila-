@@ -16,6 +16,13 @@ type FieldBase = {
   showIf?: Condition;
   /** Se guarda aparte, con acceso mas estricto (puede traer datos de salud). */
   sensitive?: boolean;
+  /** Oculta en el formulario (y no se valida) pero se conserva: nunca se borran ids ya publicados. */
+  hidden?: boolean;
+  /**
+   * core: no se puede quitar, ocultar ni cambiar de tipo (contacto, consentimiento, menores).
+   * options: sus valores de opcion no se cambian (alimentan el puntaje o las estadisticas).
+   */
+  locked?: "core" | "options";
 };
 
 export type Field = FieldBase &
@@ -35,6 +42,7 @@ export type Field = FieldBase &
 export type Section = { title?: string; description?: string; fields: Field[] };
 
 export type FormDefinition = {
+  schemaVersion?: 1;
   slug: "voluntariado" | "aliados" | "emplealab" | "createwomen" | "bootcamp";
   /** Subir al cambiar preguntas: se guarda con cada respuesta para exportar con las etiquetas correctas. */
   version: number;
@@ -48,8 +56,6 @@ export type FormDefinition = {
   minorField?: string;
   /** Texto de plazo de conservacion para el aviso de privacidad. */
   retention: string;
-  /** Formulario anterior en Google Forms; se ofrece mientras el nuevo este cerrado. */
-  legacyUrl?: string;
 };
 
 export type Answers = Record<string, unknown>;

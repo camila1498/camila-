@@ -11,9 +11,11 @@ type FormRendererProps = {
   definition: FormDefinition;
   /** Aviso de privacidad: se muestra justo antes de las casillas de consentimiento. */
   privacy: React.ReactNode;
+  /** Vista previa en el editor: valida pero no envia nada. */
+  preview?: boolean;
 };
 
-export default function FormRenderer({ definition, privacy }: FormRendererProps) {
+export default function FormRenderer({ definition, privacy, preview }: FormRendererProps) {
   const [values, setValues] = useState<Answers>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
@@ -57,6 +59,10 @@ export default function FormRenderer({ definition, privacy }: FormRendererProps)
       return;
     }
     if (result.ended) return;
+    if (preview) {
+      setFormError("Vista previa: el formulario es válido, pero aquí no se envía nada.");
+      return;
+    }
 
     startTransition(async () => {
       const response = await submitForm(definition.slug, values, {

@@ -1,11 +1,21 @@
-import { legal } from "@/lib/legal";
+import type { LegalInfo } from "@/lib/forms/store";
 import styles from "./Forms.module.css";
 
 /**
  * Borrador del aviso de privacidad (documento "Formularios CreateLatam 2026", seccion 7).
- * Pendiente de aprobacion de Legal; los datos del responsable salen de src/lib/legal.ts.
+ * Pendiente de aprobacion de Legal; los datos del responsable salen de /plataforma/configuracion.
  */
-export default function PrivacyNotice({ title, retention }: { title: string; retention: string }) {
+type LegalData = Pick<LegalInfo, "controllerName" | "ruc" | "address" | "privacyEmail" | "storageNotice">;
+
+export default function PrivacyNotice({
+  title,
+  retention,
+  legal,
+}: {
+  title: string;
+  retention: string;
+  legal: LegalData;
+}) {
   return (
     <div className={styles.privacy} role="region" aria-label="Aviso de privacidad">
       <h3>Aviso de privacidad — {title}</h3>

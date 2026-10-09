@@ -1,8 +1,7 @@
 "use server";
 
 import { createPublicClient } from "@/lib/supabase/public";
-import { getFormDefinition } from "./definitions";
-import { getAvailability } from "./status";
+import { getPublicForm } from "./store";
 import type { Answers } from "./types";
 import { validateSubmission } from "./validate";
 
@@ -20,22 +19,20 @@ const DB_MESSAGES: Record<string, string> = {
 };
 
 /**
- * Valida en el servidor (autoritativo), separa los datos sensibles y guarda via la funcion
- * submit_form de Supabase, que ademas exige que el formulario este abierto.
+ * Valida en el servidor (autoritativo) contra la version de la campaña abierta, separa los datos
+ * sensibles y guarda con submit_form, que ademas exige campaña abierta y datos legales aprobados.
  */
 export async function submitForm(
   slug: string,
   raw: Answers,
   meta: { website?: string; elapsedMs?: number },
 ): Promise<SubmitResult> {
-  const def = getFormDefinition(slug);
-  if (!def) return { ok: false, message: "Formulario no encontrado." };
-
   // Trampas anti-spam: campo oculto relleno o envio demasiado rapido. Respondemos como exito.
   if (meta.website || (meta.elapsedMs ?? 0) < MIN_FILL_MS) return { ok: true };
 
-  const { availability } = await getAvailability(def.slug);
-  if (availability !== "open") return { ok: false, message: DB_MESSAGES.form_closed };
+  const form = await getPublicForm(slug);
+  if (!form || form.state !== "open") return { ok: false, message: DB_MESSAGES.form_closed };
+  const def = form.definition;
 
   const result = validateSubmission(def, raw);
   if (!result.ok) return { ok: false, errors: result.errors, message: "Revisa los campos marcados." };
@@ -48,7 +45,6 @@ export async function submitForm(
     p_sensitive: result.sensitive,
     p_is_minor: def.minorField ? result.answers[def.minorField] === true : false,
     p_marketing: result.answers.C8 === true,
-    p_version: def.version,
   });
 
   if (error) {
