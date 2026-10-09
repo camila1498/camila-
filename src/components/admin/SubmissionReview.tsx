@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { formatLima } from "@/lib/forms/lima";
 import { type AnswerSection, REVIEW_STATUSES, STATUS_LABELS } from "@/lib/forms/review";
 import type { WhatsAppNumber } from "@/lib/messaging/phone";
@@ -8,11 +9,11 @@ import styles from "@/app/plataforma/admin.module.css";
 
 export type ReviewEvent = {
   id: string;
-  kind: "status" | "note" | "whatsapp" | "email";
+  kind: "status" | "note" | "whatsapp" | "email" | "grade";
   from_status: string | null;
   to_status: string | null;
   note: string | null;
-  detail: { template?: string; to?: string; who?: string } | null;
+  detail: { template?: string; to?: string; who?: string; slot?: string; b8?: number; b9?: number; offTopic?: boolean } | null;
   authorName: string;
   created_at: string;
 };
@@ -48,6 +49,8 @@ export type SubmissionReviewProps = {
     personUrl: string | null;
     guardianUrl: string | null;
   };
+  /** Panel adicional (p. ej. el puntaje del Bootcamp), arriba de la columna lateral. */
+  extra?: ReactNode;
   reviewAction: (formData: FormData) => void | Promise<void>;
   notesAction: (formData: FormData) => void | Promise<void>;
 };
@@ -167,6 +170,7 @@ export default function SubmissionReview(p: SubmissionReviewProps) {
         </div>
 
         <aside className={styles.reviewSide}>
+          {p.extra}
           <section className={styles.bCard}>
             <div className={styles.reviewStatus}>
               <h2>Revisión</h2>
@@ -276,6 +280,7 @@ export default function SubmissionReview(p: SubmissionReviewProps) {
                       {e.kind === "status" && `${STATUS_LABELS[e.from_status ?? ""] ?? e.from_status} → ${STATUS_LABELS[e.to_status ?? ""] ?? e.to_status}`}
                       {e.kind === "whatsapp" && `Abrió WhatsApp${e.detail?.who === "tutor" ? " (tutor)" : ""} · ${e.detail?.template ?? ""}`}
                       {e.kind === "note" && "Nota"}
+                      {e.kind === "grade" && `Calificó (${e.detail?.slot === "second" ? "segunda" : "primera"} revisión): B8 ${e.detail?.b8}, B9 ${e.detail?.b9}${e.detail?.offTopic ? " · sin relación" : ""}`}
                       {e.kind === "email" && "Correo"}
                     </strong>
                     {e.note && <span>“{e.note}”</span>}

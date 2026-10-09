@@ -1327,3 +1327,81 @@
   border-radius: 10px;
   font: inherit;
 }
+
+/* ---------- Selección por puntaje ---------- */
+.scoreTotal {
+  font-family: var(--font-museo), cursive;
+  font-weight: 900;
+  font-size: 2.4rem;
+  color: var(--violeta-deep);
+  line-height: 1.1;
+}
+.scoreTotal span {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #8a7ba3;
+}
+.gradeTitle {
+  margin-top: 18px;
+  font-size: 0.95rem;
+  color: var(--violeta-deep);
+}
+.gradeTitle span {
+  font-weight: 400;
+  color: #8a7ba3;
+  font-size: 0.82rem;
+}
+.gradeForm {
+  display: grid;
+  gap: 12px;
+  margin-top: 8px;
+}
+.gradeForm fieldset {
+  border: 1px solid rgba(91, 27, 210, 0.12);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.gradeForm legend {
+  padding: 0 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--violeta-deep);
+}
+.gradeOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.gradeOption input {
+  margin-top: 3px;
+}
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.badgeOk {
+  background: #e4f6e8;
+  color: #1a7a3c;
+}
+.rankCell {
+  font-weight: 700;
+  color: var(--violeta-deep);
+  white-space: nowrap;
+}
+.numCell {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.cutRow td {
+  background: #fff7d6;
+  font-size: 0.78rem;
+  color: #7a5b00;
+  text-align: center;
+}

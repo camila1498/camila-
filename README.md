@@ -36,7 +36,8 @@ Sin las variables de entorno, `/oportunidades` muestra un aviso en vez del lista
    `20261011000000_create_form.sql` (crear y eliminar formularios nuevos) y
    `20261012000000_reviews.sql` (historial de postulaciones y plantillas de mensajes) y
    `20261013000000_campaign_stats.sql` (cierre de campaña, cifras públicas y registro de descargas) y
-   `20261014000000_retention.sql` (archivado y vencimiento de datos personales).
+   `20261014000000_retention.sql` (archivado y vencimiento de datos personales) y
+   `20261015000000_selection.sql` (calificaciones, segunda revisión y aplicación de la selección).
 
 ## Plataforma (`/plataforma`)
 
@@ -160,6 +161,25 @@ cada pregunta rotulada `Pregunta (id)`: el id es estable, así se pueden unir ar
   identificador y solo el mes de recepción. Los datos sensibles ni siquiera se leen de la base en este modo.
 - Los textos que empiezan con `=`, `+`, `-` o `@` se neutralizan para que Excel no los ejecute como fórmula.
 
+## Selección del Bootcamp por puntaje
+
+Solo para campañas del formulario `bootcamp` (reglas del PDF §6, en `src/lib/selection/bootcamp.ts`). En la ficha de cada
+postulación aparece el panel **Puntaje del Bootcamp** y en la campaña, **Selección por puntaje**.
+
+- **Descarte por elegibilidad** (se *propone*, no se aplica solo): edad fuera del rango de B1, disponibilidad «No» (B10) o B8/B9
+  vacías o sin relación (lo marca quien revisa).
+- **Puntaje 0 a 10**: automáticos B5 pública = 3, B7 «Nunca» = 2 / «Uno corto» = 1, B10 «A la mayoría» = −1; a mano B8 de 0 a 3 y
+  B9 de 0 a 2, con la rúbrica del PDF a la vista.
+- **Orden y cortes**: de mayor a menor puntaje, empate gana quien postuló antes; se aprueba hasta llenar los cupos y las
+  siguientes, hasta el 20 % de los cupos, quedan en lista de espera.
+- **Segunda revisión**: las postulaciones a 1 punto del corte la necesitan; la hace **otra persona** (la base lo impide si es la
+  misma) y B8/B9 finales son el **promedio** de las dos. *(El PDF no dice cómo resolver una diferencia: es un supuesto a confirmar.)*
+- **Laptop e internet nunca descartan ni cambian el puntaje**: solo dan las etiquetas «Requiere equipo» (B11 «Solo celular»/«No» o
+  B12 «No tengo») y «Solo datos móviles», con el aviso correspondiente. Se puede marcar «equipo conseguido».
+- **Aplicar la propuesta** (campaña cerrada, todo calificado) aprueba, deja en lista de espera y marca como no seleccionadas;
+  recalcula con los datos actuales, **no pisa decisiones ya tomadas** y cada cambio queda en el historial con la nota
+  «Selección por puntaje».
+
 ## Archivado y vencimientos
 
 Al terminar el proceso, en **«Cierre y exportación» → Archivar** se indica cuándo terminó el programa. Requiere haber
@@ -223,5 +243,4 @@ admin; si la posición ya la tiene otra beca, las dos intercambian.
 
 - **Supabase para el resto del contenido** (equipo, programas, testimonios), hoy en `src/data/`.
 - **Exportación a Excel** (`.xlsx`), además del CSV.
-- **Puntaje del Bootcamp** (reglas del PDF §6).
-- **Consentimiento del tutor** para menores y contador de cupos del Bootcamp.
+- **Consentimiento del tutor** para menores (enlace por postulante), correo de confirmación y contador de cupos del Bootcamp.
