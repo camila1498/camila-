@@ -16,12 +16,13 @@ export type CampaignInfo = {
   closes_at: string | null;
   opened_at: string;
   closed_at: string | null;
+  program_ended_on: string | null;
 };
 
 type CampaignRow = Omit<CampaignInfo, "form_title"> & { forms: { title: string } | { title: string }[] | null };
 
 const CAMPAIGN_COLUMNS =
-  "id,form_slug,name,version,status,capacity,opens_at,closes_at,opened_at,closed_at,forms(title)";
+  "id,form_slug,name,version,status,capacity,opens_at,closes_at,opened_at,closed_at,program_ended_on,forms(title)";
 
 function toInfo(row: CampaignRow): CampaignInfo {
   const forms = Array.isArray(row.forms) ? row.forms[0] : row.forms;

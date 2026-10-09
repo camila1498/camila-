@@ -9,7 +9,7 @@ import { loadCampaign, loadStatusCounts } from "@/lib/forms/review-data";
 import { loadCampaignStats } from "@/lib/stats/load";
 import { METRICS, MIN_FOR_BREAKDOWNS } from "@/lib/stats/types";
 import styles from "../../../../admin.module.css";
-import { closeCampaignAndCount, publishStats, refreshStats, saveStatsSelection } from "../../actions";
+import { archiveCampaign, closeCampaignAndCount, publishStats, refreshStats, saveStatsSelection } from "../../actions";
 
 export default async function CierrePage({
   params,
@@ -25,7 +25,25 @@ export default async function CierrePage({
   const campaign = await loadCampaign(supabase, id);
   if (!campaign) notFound();
   const isOpen = campaign.status === "open";
-  const [stats, counts] = await Promise.all([isOpen ? null : loadCampaignStats(supabase, id), loadStatusCounts(supabase, id)]);
+  const isArchived = campaign.status === "archived";
+  const [stats, counts, lastExport, purgeLog] = await Promise.all([
+    isOpen ? null : loadCampaignStats(supabase, id),
+    loadStatusCounts(supabase, id),
+    supabase
+      .from("export_log")
+      .select("created_at")
+      .eq("campaign_id", id)
+      .eq("mode", "completo")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .overrideTypes<{ created_at: string }, { merge: false }>(),
+    supabase.from("retention_log").select("id", { count: "exact", head: true }).eq("campaign_id", id),
+  ]);
+  const exportedAt = lastExport.data && campaign.closed_at && lastExport.data.created_at >= campaign.closed_at ? lastExport.data.created_at : null;
+  const wasPurged = (purgeLog.count ?? 0) > 0;
+  const todayLima = new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const programEnd = campaign.program_ended_on;
 
   const snap = stats?.snapshot;
   const selection = stats?.public_selection;
@@ -44,7 +62,7 @@ export default async function CierrePage({
           <h1>Cierre y cifras</h1>
           <p>
             <Link href={`/plataforma/campanas/${id}`}>← {campaign.name}</Link> · {campaign.form_title} ·{" "}
-            {isOpen ? "recibiendo postulaciones" : `cerrada ${formatLima(campaign.closed_at)}`}
+            {isOpen ? "recibiendo postulaciones" : `${isArchived ? "archivada · " : ""}cerrada ${formatLima(campaign.closed_at)}`}
           </p>
         </div>
       </div>
@@ -135,12 +153,18 @@ export default async function CierrePage({
               </div>
             </details>
 
-            <form action={refreshStats.bind(null, id)} className={styles.formActions}>
-              <button type="submit" className={styles.btnGhost}>
-                Recalcular cifras
-              </button>
-              <span className={styles.hint}>Úsalo si seguiste revisando postulaciones después de cerrar.</span>
-            </form>
+            {wasPurged || isArchived ? (
+              <p className={styles.hint}>
+                {wasPurged ? "Ya se eliminaron datos de esta campaña: las cifras quedan fijas." : "Campaña archivada: las cifras quedan fijas."}
+              </p>
+            ) : (
+              <form action={refreshStats.bind(null, id)} className={styles.formActions}>
+                <button type="submit" className={styles.btnGhost}>
+                  Recalcular cifras
+                </button>
+                <span className={styles.hint}>Úsalo si seguiste revisando postulaciones después de cerrar.</span>
+              </form>
+            )}
           </section>
 
           <section className={styles.summary}>
@@ -245,6 +269,31 @@ export default async function CierrePage({
           </div>
         </div>
       </section>
+
+      {!isOpen && (
+        <section className={styles.summary}>
+          <h2>5. Archivar la campaña</h2>
+          <p className={styles.hint}>
+            Archivar da por terminado el proceso: ya no se cambian estados y empiezan a correr los plazos de conservación (ver{" "}
+            <Link href="/plataforma/vencimientos">Vencimientos</Link>). Antes, avisa a las personas postulantes y descarga la exportación completa.
+          </p>
+          <p className={styles.hint}>
+            {exportedAt ? `Exportación completa descargada: ${formatLima(exportedAt)}.` : "Aún no descargas la exportación completa: es obligatoria para archivar."}
+            {counts.nueva || counts.en_revision
+              ? ` Ojo: ${(counts.nueva ?? 0) + (counts.en_revision ?? 0)} postulaciones siguen sin resolver y contarán como no seleccionadas.`
+              : ""}
+          </p>
+          <form action={archiveCampaign.bind(null, id)} className={styles.archiveRow}>
+            <label>
+              Fecha en que terminó el programa
+              <input type="date" name="program_end" max={todayLima} defaultValue={programEnd ?? todayLima} required />
+            </label>
+            <button type="submit" className={styles.btn} disabled={!exportedAt}>
+              {isArchived ? "Corregir fecha" : "Archivar campaña"}
+            </button>
+          </form>
+        </section>
+      )}
     </>
   );
 }

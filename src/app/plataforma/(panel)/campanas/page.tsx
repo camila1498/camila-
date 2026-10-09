@@ -35,11 +35,11 @@ export default async function CampanasPage() {
                   <div>
                     <h2>{c.name}</h2>
                     <p className={styles.liveOff}>
-                      {c.form_title} · versión {c.version} · {c.status === "open" ? "recibiendo postulaciones" : `cerrada ${formatLima(c.closed_at)}`}
+                      {c.form_title} · versión {c.version} · {c.status === "open" ? "recibiendo postulaciones" : `${c.status === "archived" ? "archivada · " : ""}cerrada ${formatLima(c.closed_at)}`}
                     </p>
                   </div>
                   <span className={`${styles.pill} ${styles.pillStatic} ${c.status === "open" ? styles.pillOn : styles.pillOff}`}>
-                    {c.status === "open" ? "Abierta" : "Cerrada"}
+                    {c.status === "open" ? "Abierta" : c.status === "archived" ? "Archivada" : "Cerrada"}
                   </span>
                 </div>
                 <dl className={styles.formMeta}>

@@ -1275,3 +1275,55 @@
   font-size: 0.95rem;
   color: var(--violeta-deep);
 }
+
+/* ---------- Vencimientos y archivado ---------- */
+.dueNow {
+  color: var(--magenta);
+  font-weight: 600;
+}
+.rulesRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(91, 27, 210, 0.1);
+}
+.rulesRow strong {
+  min-width: 110px;
+  align-self: center;
+  color: var(--violeta-deep);
+}
+.rulesRow label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #8a7ba3;
+}
+.rulesRow input {
+  width: 110px;
+  padding: 8px 10px;
+  border: 1.5px solid rgba(91, 27, 210, 0.25);
+  border-radius: 10px;
+  font: inherit;
+}
+.archiveRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+}
+.archiveRow label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #8a7ba3;
+}
+.archiveRow input {
+  padding: 8px 10px;
+  border: 1.5px solid rgba(91, 27, 210, 0.25);
+  border-radius: 10px;
+  font: inherit;
+}
