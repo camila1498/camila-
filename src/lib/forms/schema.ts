@@ -45,6 +45,12 @@ const field = z.discriminatedUnion("type", [
     min: z.number().int().optional(),
     max: z.number().int().optional(),
   }),
+  z.object({
+    ...base,
+    type: z.literal("date"),
+    min: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    max: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  }),
   z.object({ ...base, type: z.literal("select"), options: z.array(option).min(1).max(60) }),
   z.object({
     ...base,
@@ -139,6 +145,9 @@ export function validateDefinition(next: FormDefinition, published: FormDefiniti
     }
     if (f.type === "number" && f.min !== undefined && f.max !== undefined && f.min > f.max) {
       errors.push(`"${f.label}": el mínimo es mayor que el máximo.`);
+    }
+    if (f.type === "date" && f.min && f.max && f.min > f.max) {
+      errors.push(`"${f.label}": la fecha mínima es posterior a la máxima.`);
     }
     if (f.type === "textarea" && f.minWords && f.maxWords && f.minWords > f.maxWords) {
       errors.push(`"${f.label}": el mínimo de palabras es mayor que el máximo.`);

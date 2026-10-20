@@ -31,6 +31,7 @@ const addableTypes: { value: Field["type"]; label: string }[] = [
   { value: "select", label: "Opción única" },
   { value: "multiselect", label: "Opción múltiple" },
   { value: "number", label: "Número" },
+  { value: "date", label: "Fecha" },
   { value: "boolean", label: "Sí / No" },
   { value: "email", label: "Correo" },
   { value: "tel", label: "Teléfono" },
@@ -43,6 +44,7 @@ const typeLabel: Record<Field["type"], string> = {
   select: "Opción única",
   multiselect: "Opción múltiple",
   number: "Número",
+  date: "Fecha",
   boolean: "Sí / No",
   email: "Correo",
   tel: "Teléfono",
@@ -73,6 +75,7 @@ function newField(type: Field["type"], id: string): Field {
     case "textarea":
       return { ...base, type };
     case "number":
+    case "date":
       return { ...base, type };
     default:
       return { ...base, type: type as "text" | "boolean" | "email" | "tel" | "url" };
@@ -422,6 +425,22 @@ function FieldEditor({ field, earlier, canRemove, onChange, onRemove }: FieldEdi
             />
           </div>
         </div>
+      )}
+
+      {field.type === "date" && (
+        <>
+          <div className={styles.inline2}>
+            <div className={styles.field}>
+              <label htmlFor={`f-dmin-${field.id}`}>Fecha mínima (opcional)</label>
+              <input id={`f-dmin-${field.id}`} type="date" value={field.min ?? ""} onChange={(e) => set("min", e.target.value)} />
+            </div>
+            <div className={styles.field}>
+              <label htmlFor={`f-dmax-${field.id}`}>Fecha máxima (opcional)</label>
+              <input id={`f-dmax-${field.id}`} type="date" value={field.max ?? ""} onChange={(e) => set("max", e.target.value)} />
+            </div>
+          </div>
+          <span className={styles.hint}>Sirve, por ejemplo, para fecha de nacimiento (máxima: hoy) o para elegir una fecha dentro del programa.</span>
+        </>
       )}
 
       <div className={styles.fieldFlags}>

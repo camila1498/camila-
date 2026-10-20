@@ -19,7 +19,8 @@ export type ExportRow = {
 };
 
 /** Tipos que pueden identificar a alguien (texto libre, contacto): fuera del modo anonimizado. */
-const IDENTIFYING = new Set(["text", "textarea", "email", "tel", "url"]);
+// Las fechas también: una fecha de nacimiento más el país identifica a una persona.
+const IDENTIFYING = new Set(["text", "textarea", "email", "tel", "url", "date"]);
 
 const yesNo = (v: boolean) => (v ? "Sí" : "No");
 
