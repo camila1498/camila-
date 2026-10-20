@@ -1,4 +1,5 @@
 import { fieldsOf } from "./schema";
+import { formatIsoDate } from "./validate";
 import type { Answers, Field, FormDefinition } from "./types";
 
 export const STATUS_LABELS: Record<string, string> = {
@@ -28,6 +29,7 @@ export const statusClass = (status: string) =>
 export function formatValue(field: Field, value: unknown): string {
   if (value === undefined || value === null || value === "") return "—";
   if (typeof value === "boolean") return value ? "Sí" : "No";
+  if (field.type === "date" && typeof value === "string") return formatIsoDate(value);
   if (Array.isArray(value)) {
     return value.map((v) => optionLabel(field, String(v))).join(", ") || "—";
   }

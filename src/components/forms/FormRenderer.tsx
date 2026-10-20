@@ -317,6 +317,17 @@ function FieldControl({ field, value, error, required, onChange }: FieldControlP
           onChange={(e) => onChange(e.target.value)}
         />
       )}
+      {field.type === "date" && (
+        <input
+          {...inputProps}
+          className={cls(styles.input)}
+          type="date"
+          min={field.min}
+          max={field.max}
+          value={typeof value === "string" ? value : ""}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )}
       {field.type === "number" && (
         <input
           {...inputProps}

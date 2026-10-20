@@ -137,6 +137,11 @@ Si el número no trae código de país, se le agrega el del país indicado y se 
 `{{nombre}}`, `{{nombre_completo}}`, `{{formulario}}` y `{{campana}}` (una lista cerrada; cualquier otra se rechaza
 al guardar).
 
+**Tipos de pregunta del constructor**: texto corto y largo, opción única y múltiple, número, **fecha** (con fecha mínima y máxima
+opcionales; se guarda como `AAAA-MM-DD` y se muestra `dd/mm/aaaa`), sí/no, correo, teléfono y enlace. Las fechas se omiten en la
+exportación anonimizada porque podrían ser fechas de nacimiento. El menú lateral de `/plataforma` se puede **contraer a íconos**
+(botón junto al logo; se recuerda en ese navegador).
+
 ## Cierre, cifras y exportación
 
 Desde una campaña, **«Cierre y exportación»** (`/plataforma/campanas/<id>/cierre`):

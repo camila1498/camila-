@@ -33,6 +33,8 @@ export type Field = FieldBase &
     | { type: "url" }
     | { type: "textarea"; minWords?: number; maxWords?: number }
     | { type: "number"; min?: number; max?: number }
+    /** Valor "AAAA-MM-DD". min/max opcionales, en el mismo formato. */
+    | { type: "date"; min?: string; max?: string }
     | { type: "select"; options: Option[] }
     | { type: "multiselect"; options: Option[]; max?: number }
     | { type: "boolean" }

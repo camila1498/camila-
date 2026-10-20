@@ -33,6 +33,18 @@ const urlSchema = z
   .refine((v) => /^https?:\/\/\S+\.\S+/i.test(v));
 const phoneSchema = z.string().regex(/^\+?[0-9][0-9\s().-]{6,19}$/);
 
+/** "AAAA-MM-DD" que existe en el calendario (rechaza 2026-02-31) y con un año razonable. */
+export function isValidIsoDate(v: unknown): v is string {
+  if (typeof v !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+  const [y, m, d] = v.split("-").map(Number) as [number, number, number];
+  if (y < 1900 || y > 2100) return false;
+  const date = new Date(Date.UTC(y, m - 1, d));
+  return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
+}
+
+/** 2026-10-20 -> 20/10/2026 (así se lee en Perú). */
+export const formatIsoDate = (v: string) => (isValidIsoDate(v) ? v.split("-").reverse().join("/") : v);
+
 const isEmpty = (v: unknown) =>
   v === undefined || v === null || v === "" || (Array.isArray(v) && v.length === 0);
 
@@ -79,6 +91,12 @@ function checkField(field: Field, value: unknown, required: boolean): string | n
       if (!Number.isFinite(n) || !Number.isInteger(n)) return "Escribe un número entero";
       if (field.min !== undefined && n < field.min) return `Debe ser ${field.min} o más`;
       if (field.max !== undefined && n > field.max) return `Debe ser ${field.max} o menos`;
+      return null;
+    }
+    case "date": {
+      if (!isValidIsoDate(value)) return "Elige una fecha válida";
+      if (field.min && value < field.min) return `La fecha debe ser el ${formatIsoDate(field.min)} o posterior`;
+      if (field.max && value > field.max) return `La fecha debe ser el ${formatIsoDate(field.max)} o anterior`;
       return null;
     }
     case "select":
